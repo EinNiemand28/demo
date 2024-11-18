@@ -1,0 +1,14 @@
+<h1>这是一个简易的校园活动管理系统</h1>
+<p>你可以在这里查看活动信息，报名参加活动，以及查看自己的报名情况。</p>
+
+<% if user_signed_in? %>
+  Welcome, <%= current_user.name %>.<br />
+  <%= link_to "sign out", destroy_user_session_path, data: {
+    turbo_method: :delete
+  }%>
+<% else %>
+  <%= link_to "sign up", new_user_registration_path %> |
+  <%= link_to "log in", new_user_session_path %>
+<% end %>
+<br /><br />
+<%= link_to "home", root_path %>
