@@ -14,6 +14,7 @@ development:
   # database: storage/development.sqlite3
   adapter: mysql2
   encoding: utf8
+  host: 120.46.3.97
   database: h_db21376317
   username: u21376317
   password: Aa549739
