@@ -1,0 +1,23 @@
+test-demo:
+  stage: test
+  script:
+    - cd demo
+    - bundle install
+    - rails db:migrate RAILS_ENV=test
+    - PARALLEL_WORKERS=1 rails test
+  only:
+    - demo
+
+deploy-demo:
+  stage: deploy
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y libmysqlclient-dev
+  script:
+    - rsync -arv --delete --exclude="*.sqlite3" ./demo /
+    - cd /demo
+    - bundle install
+    - rails db:migrate
+    - sv restart demo
+  only:
+    - demo
