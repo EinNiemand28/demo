@@ -17,6 +17,7 @@
  #left-panel {
     float: left;
     margin: 20px;
+    height: 100vh;
 }
 
 #main-panel {
@@ -26,5 +27,7 @@
 }
 
 #footer {
-    clear: both;
+    clear: both;   
+    margin-top: auto;
+    text-align: center;
 }

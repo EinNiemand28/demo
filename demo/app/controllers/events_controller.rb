@@ -7,6 +7,9 @@ class EventsController < ApplicationController
   def index
     @events = Event.where(status: [:ongoing, :finished, :canceled])
     @upcoming_events = Event.where(status: :pending).order(start_time: :asc)
+    @registered_events = current_user.registered_events if current_user.student?
+    @associated_events = current_user.associated_events if current_user.teacher?
+    @organized_events = current_user.organized_events if current_user.teacher?
   end
 
   # GET /events/1 or /events/1.json

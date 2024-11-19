@@ -29,11 +29,16 @@
           turbo_method: :delete
         } %>
       <% else %>
-        <%= link_to "sign in", new_user_session_path %> | 
+        <%= link_to "sign in", new_user_session_path %>
         <%= link_to "sign up", new_user_registration_path %>
       <% end %>
       <br /><br />
       <%= link_to "home", root_path %>
+
+      <br /><br />
+      <div id="footer">
+        Copyright pzy &copy; 2024
+      </div>
     </div>
 
     <div id="main-panel">
@@ -42,9 +47,6 @@
       <%= yield %>
     </div>
 
-    <div id="footer">
-      Copyright pzy &copy; 2024
-    </div>
 
   </body>
 </html>

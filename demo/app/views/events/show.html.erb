@@ -44,7 +44,7 @@
   <% else %>
     <% if current_user.registered_events.include?(@event) %>
       <%= button_to '取消报名', event_student_event_path(@event, current_user.student_events.find_by(event: @event)), method: :delete %>
-    <% elsif @event.status == 'ongoing' && @event.max_participants > @event.participants.count %>
+    <% elsif @event.status == 'ongoing' %>
       <%= button_to '报名参加', event_student_events_path(@event), method: :post %>
     <% else %>
       <p>报名已满或活动不允许报名。</p>

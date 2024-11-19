@@ -11,6 +11,8 @@ class StudentEventsController < ApplicationController
     @student_event = current_user.student_events.find_by(event: @event)
     if @student_event&.registered?
       redirect_to @event, alert: '您已报名该活动。' and return
+    elsif @event.max_participants <= @event.registered_student_events.count
+      redirect_to @event, alert: '报名人数已满。' and return
     else
       if @student_event.nil?
         @student_event = current_user.student_events.build(event: @event)

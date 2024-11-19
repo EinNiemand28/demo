@@ -1,0 +1,9 @@
+:concurrency: 2
+:queues:
+  - default
+
+:scheduler:
+  :schedule:
+    update_event_status:
+      cron: "*/1 * * * *"
+      class: UpdateEventStatusJob

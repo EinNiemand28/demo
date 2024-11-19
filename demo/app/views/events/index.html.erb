@@ -41,6 +41,9 @@
               turbo_confirm: "确定要取消活动 #{event.title} 吗？"
             } %>
           <% end %>
+          <% if current_user.student? && event.status == 'ongoing' %>
+            <%= link_to '报名参加', event_student_events_path(event), data: { turbo_method: :post } %>
+          <% end %>
         </td>
       </tr>
     <% end %>
@@ -90,4 +93,104 @@
       <% end %>
     </tbody>
   </table>
+<% end %>
+
+<% if current_user.student? %>
+  <h2>已报名活动</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>标题</th>
+        <th>描述</th>
+        <th>开始时间</th>
+        <th>结束时间</th>
+        <th>地点</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @registered_events.each do |event| %>
+        <tr>
+          <td><%= link_to event.title, event_path(event) %></td>
+          <td><%= truncate(event.description, length: 50) %></td>
+          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.location %></td>
+          <td><%= event.status.humanize %></td>
+          <td>
+            <%= link_to '查看', event_path(event) %>
+            <%= link_to '取消报名', event_student_event_path(event, current_user.student_events.find_by(event: event)), data: { turbo_method: :delete } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<% if current_user.teacher? %>
+  <h2>关联的活动</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>标题</th>
+        <th>描述</th>
+        <th>开始时间</th>
+        <th>结束时间</th>
+        <th>地点</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @associated_events.each do |event| %>
+        <tr>
+          <td><%= link_to event.title, event_path(event) %></td>
+          <td><%= truncate(event.description, length: 50) %></td>
+          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.location %></td>
+          <td><%= event.status.humanize %></td>
+          <td>
+            <%= link_to '查看', event_path(event) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <h2>组织的活动</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>标题</th>
+        <th>描述</th>
+        <th>开始时间</th>
+        <th>结束时间</th>
+        <th>地点</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @organized_events.each do |event| %>
+        <tr>
+          <td><%= link_to event.title, event_path(event) %></td>
+          <td><%= truncate(event.description, length: 50) %></td>
+          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.location %></td>
+          <td><%= event.status.humanize %></td>
+          <td>
+            <%= link_to '查看', event_path(event) %>
+            <%= link_to '编辑', edit_event_path(event) %>
+            <% if event.status != 'canceled' %>
+              <%= link_to '取消活动', cancel_event_path(event), data: {
+                turbo_method: :patch,
+                turbo_confirm: "确定要取消活动 #{event.title} 吗？"
+              } %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
 <% end %>
