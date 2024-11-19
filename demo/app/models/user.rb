@@ -9,6 +9,7 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 6 }, allow_blank: true
   validate :email_or_telephone_present
 
+  has_many :organized_events, class_name: "Event", foreign_key: "organizer_teacher_id", dependent: :destroy
   has_many :teacher_events, foreign_key: "user_id", dependent: :destroy
   has_many :associated_events, through: :teacher_events, source: :event
   has_many :student_events, foreign_key: "user_id", dependent: :destroy
