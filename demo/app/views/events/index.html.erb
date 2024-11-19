@@ -1,0 +1,93 @@
+<h1>活动列表</h1>
+
+<% if user_signed_in? && (current_user.admin? || current_user.teacher?) %>
+  <%= link_to '创建新活动', new_event_path %>
+<% end %>
+
+<h2>所有活动</h2>
+<table>
+  <thead>
+    <tr>
+      <th>标题</th>
+      <th>描述</th>
+      <th>开始时间</th>
+      <th>结束时间</th>
+      <th>地点</th>
+      <th>状态</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @events.each do |event| %>
+      <tr>
+        <td><%= link_to event.title, event_path(event) %></td>
+        <td><%= truncate(event.description, length: 50) %></td>
+        <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
+        <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+        <td><%= event.location %></td>
+        <td><%= event.status.humanize %></td>
+        <td>
+          <%= link_to '查看', event_path(event) %>
+          <% if current_user.admin? || event.organizer_teacher == current_user %>
+            <%= link_to '编辑', edit_event_path(event) %>
+            <%= link_to '删除', event_path(event), data: {
+              turbo_method: :delete,
+              turbo_confirm: "确定要删除活动 #{event.title} 吗？"
+            } %>
+          <% end %>
+          <% if (current_user.admin? || event.organizer_teacher == current_user) && event.status != 'canceled' %>
+            <%= link_to '取消活动', cancel_event_path(event), data: {
+              turbo_method: :patch,
+              turbo_confirm: "确定要取消活动 #{event.title} 吗？"
+            } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if current_user.admin? %>
+  <h2>待批准活动</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>标题</th>
+        <th>描述</th>
+        <th>开始时间</th>
+        <th>结束时间</th>
+        <th>地点</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @upcoming_events.each do |event| %>
+        <tr>
+          <td><%= link_to event.title, event_path(event) %></td>
+          <td><%= truncate(event.description, length: 50) %></td>
+          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= event.location %></td>
+          <td><%= event.status.humanize %></td>
+          <td>
+            <%= link_to '查看', event_path(event) %>
+            <% if current_user.admin? || event.organizer_teacher == current_user %>
+              <%= link_to '编辑', edit_event_path(event) %>
+              <%= link_to '删除', event_path(event), data: {
+                turbo_method: :delete,
+                turbo_confirm: "确定要删除活动 #{event.title} 吗？"
+              } %>
+            <% end %>
+            <% if current_user.admin? && event.status == 'pending' %>
+              <%= link_to '批准活动', approve_event_path(event), data: {
+                turbo_method: :patch,
+                turbo_confirm: "确定要批准活动 #{event.title} 吗？"
+              } %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

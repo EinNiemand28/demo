@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyText
+  event_time: 2024-11-18 18:45:24
+  location: MyString
+  status: 1
+  registration_deadline: 2024-11-18 18:45:24
+  max_participants: 1
+
+two:
+  title: MyString
+  description: MyText
+  event_time: 2024-11-18 18:45:24
+  location: MyString
+  status: 1
+  registration_deadline: 2024-11-18 18:45:24
+  max_participants: 1

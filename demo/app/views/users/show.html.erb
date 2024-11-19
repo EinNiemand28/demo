@@ -1,10 +1,34 @@
-<p style="color: green"><%= notice %></p>
+<h1>用户详情</h1>
 
-<%= render @user %>
+<p>
+  <strong>姓名:</strong>
+  <%= @user.name %>
+</p>
 
-<div>
-  <%= link_to "Edit this user", edit_user_path(@user) %> |
-  <%= link_to "Back to users", users_path %>
+<p>
+  <strong>邮箱:</strong>
+  <%= @user.email %>
+</p>
 
-  <%= button_to "Destroy this user", @user, method: :delete %>
-</div>
+<p>
+  <strong>电话:</strong>
+  <%= @user.telephone %>
+</p>
+
+<p>
+  <strong>权限:</strong>
+  <%= @user.role_level.humanize %>
+</p>
+
+<p>
+  <strong>志愿时数:</strong>
+  <%= @user.volunteer_hours %> 小时
+</p>
+
+<p>
+  <strong>个人头像:</strong><br />
+  <%= image_tag @user.profile_picture.variant(resize: "100x100") if @user.profile_picture.attached? %>
+</p>
+
+<%= link_to '编辑用户', edit_user_path(@user) %> |
+<%= link_to '返回用户列表', users_path %>

@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  event: one
+  registration_time: 2024-11-19 00:26:40
+  status: 1
+
+two:
+  user: two
+  event: two
+  registration_time: 2024-11-19 00:26:40
+  status: 1

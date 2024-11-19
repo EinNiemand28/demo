@@ -2,7 +2,7 @@
 
 <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
   <div class="field">
-    <%= f.label :user %><br />
+    <%= f.label :user %> <i>(Email or Telephone)</i><br />
     <%= f.email_field :login, autofocus: true %>
   </div>
 

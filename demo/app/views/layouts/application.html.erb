@@ -18,8 +18,34 @@
   </head>
 
   <body>
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
-    <%= yield %>
+    <div id="banner">
+      <h1>Home</h1>
+    </div>
+    <div id="left-panel">
+      <%# left-panel %>
+      <% if user_signed_in? %>
+        Welcome, <%= current_user.name %>.<br />
+        <%= link_to "sign out", destroy_user_session_path, data: {
+          turbo_method: :delete
+        } %>
+      <% else %>
+        <%= link_to "sign in", new_user_session_path %> | 
+        <%= link_to "sign up", new_user_registration_path %>
+      <% end %>
+      <br /><br />
+      <%= link_to "home", root_path %>
+    </div>
+
+    <div id="main-panel">
+      <p class="notice"><%= notice %></p>
+      <p class="alert"><%= alert %></p>
+      <%= yield %>
+    </div>
+
+    <div id="footer">
+      Copyright pzy &copy; 2024
+    </div>
+
   </body>
 </html>
+

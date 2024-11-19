@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_18_095307) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_18_172032) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -39,6 +39,52 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_18_095307) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "events", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "title", limit: 100, null: false
+    t.text "description", null: false
+    t.datetime "start_time", null: false
+    t.datetime "end_time", null: false
+    t.string "location", null: false
+    t.bigint "organizer_teacher_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "registration_deadline", null: false
+    t.integer "max_participants", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organizer_teacher_id"], name: "index_events_on_organizer_teacher_id"
+  end
+
+  create_table "student_events", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "event_id", null: false
+    t.timestamp "registration_time", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_student_events_on_event_id"
+    t.index ["user_id", "event_id"], name: "index_student_events_on_user_id_and_event_id", unique: true
+    t.index ["user_id"], name: "index_student_events_on_user_id"
+  end
+
+  create_table "teacher_events", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_teacher_events_on_event_id"
+    t.index ["user_id", "event_id"], name: "index_teacher_events_on_user_id_and_event_id", unique: true
+    t.index ["user_id"], name: "index_teacher_events_on_user_id"
+  end
+
+  create_table "teachers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_teachers_on_event_id"
+    t.index ["user_id"], name: "index_teachers_on_user_id"
+  end
+
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", limit: 50, null: false
     t.string "email", limit: 100, default: ""
@@ -59,4 +105,11 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_18_095307) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "events", "users", column: "organizer_teacher_id"
+  add_foreign_key "student_events", "events"
+  add_foreign_key "student_events", "users"
+  add_foreign_key "teacher_events", "events"
+  add_foreign_key "teacher_events", "users"
+  add_foreign_key "teachers", "events"
+  add_foreign_key "teachers", "users"
 end

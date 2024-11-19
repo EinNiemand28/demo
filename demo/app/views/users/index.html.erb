@@ -1,16 +1,57 @@
-<p style="color: green"><%= notice %></p>
+<h1>用户列表</h1>
 
-<% content_for :title, "Users" %>
+<%= search_form_for @q, url: users_path, method: :get do |f| %>
+  <div class="field">
+    <%= f.label :name_cont, "按姓名搜索" %>
+    <%= f.text_field :name_cont %>
+  </div>
+  <div class="field">
+    <%= f.label :email_cont, "按邮箱搜索" %>
+    <%= f.text_field :email_cont %>
+  </div>
+  <div class="field">
+    <%= f.label :telephone_cont, "按电话搜索" %>
+    <%= f.text_field :telephone_cont %>
+  </div>
+  <div class="field">
+    <%= f.label :role_level_eq, "按权限过滤" %>
+    <%= f.select :role_level_eq, User.role_levels.map { |key, value| [key.humanize, value] }, { include_blank: "所有权限" } %>
+  </div>
+  <div class="actions">
+    <%= f.submit "搜索" %>
+  </div>
+<% end %>
 
-<h1>Users</h1>
+<h2>所有用户</h2>
+<table>
+  <thead>
+    <tr>
+      <th>姓名</th>
+      <th>邮箱</th>
+      <th>电话</th>
+      <th>角色</th>
+      <th>操作</th>
+    </tr>
+  </thead>
 
-<div id="users">
-  <% @users.each do |user| %>
-    <%= render user %>
-    <p>
-      <%= link_to "Show this user", user %>
-    </p>
-  <% end %>
-</div>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= link_to user.name, user_path(user) %></td>
+        <td><%= user.email %></td>
+        <td><%= user.telephone %></td>
+        <td><%= user.role_level.humanize %></td>
+        <td>
+          <%= link_to '查看', user_path(user) %> |
+          <%= link_to '编辑', edit_user_path(user) %> |
+          <%= link_to '删除', user_path(user), data: {
+            turbo_method: :delete,
+            turbo_confirm: "确定要删除用户 #{user.name} 吗？"
+          } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
 
-<%= link_to "New user", new_user_path %>
+<%= paginate @users %>

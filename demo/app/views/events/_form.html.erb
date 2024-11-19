@@ -1,0 +1,58 @@
+<%= form_with(model: event, local: true) do |f| %>
+  <% if event.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(event.errors.count, "错误") %> 阻止活动被保存：</h2>
+      <ul>
+        <% event.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :title %><br />
+    <%= f.text_field :title %>
+  </div>
+
+  <div class="field">
+    <%= f.label :description %><br />
+    <%= f.text_area :description %>
+  </div>
+
+  <div class="field">
+    <%= f.label :start_time %>
+    <%= f.datetime_select :start_time %>
+  </div>
+
+  <div class="field">
+    <%= f.label :end_time %>
+    <%= f.datetime_select :end_time %>
+  </div>
+
+  <div class="field">
+    <%= f.label :location %><br />
+    <%= f.text_field :location %>
+  </div>
+
+  <div class="field">
+    <%= f.label :registration_deadline %>
+    <%= f.datetime_select :registration_deadline %>
+  </div>
+
+  <div class="field">
+    <%= f.label :max_participants %>
+    <%= f.number_field :max_participants %>
+  </div>
+
+  <div class="field">
+    <%= f.label :status %><br />
+    <%= f.select :status, Event.statuses.keys.map { |status| [status.humanize, status] }, include_blank: false %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit '保存'%>
+  </div>
+<% end %>
+
+<%= link_to '返回活动列表', events_path %>
