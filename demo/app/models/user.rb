@@ -13,9 +13,10 @@ class User < ApplicationRecord
   has_many :teacher_events, foreign_key: "user_id", dependent: :destroy
   has_many :associated_events, through: :teacher_events, source: :event
   has_many :student_events, foreign_key: "user_id", dependent: :destroy
-  has_many :registered_student_events, -> { where(status: :registered) }, class_name: "StudentEvent"
-  has_many :registered_events, through: :registered_student_events, source: :event
+  has_many :registered_events, -> { where(student_events: { status: :registered }) }, through: :student_events, source: :event
 
+  has_many :student_volunteer_positions, foreign_key: "user_id", dependent: :destroy
+  has_many :registered_volunteer_positions, -> { where(student_volunteer_positions: { status: :approved }) }, through: :student_volunteer_positions, source: :volunteer_position
 
   enum role_level: { student: 0, teacher: 1, admin: 2 }
   after_initialize :set_default_role, if: :new_record?
@@ -51,6 +52,14 @@ class User < ApplicationRecord
 
   def self.ransackable_attributes(auth_object = nil)
     ["email", "id", "name", "telephone", "role_level"]
+  end
+
+  def contact_info
+    if telephone.present?
+      telephone
+    else
+      email
+    end
   end
 
   private

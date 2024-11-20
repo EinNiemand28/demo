@@ -30,19 +30,27 @@ class EventsController < ApplicationController
     @event = current_user.organized_events.build(event_params)
     @event.status = :pending
 
-    if @event.save
-      redirect_to @event, notice: "活动已申请，等待审核。"
-    else
-      render :new, status: :unprocessable_entity
+    respond_to do |format|
+      if @event.save
+        format.html { redirect_to @event, notice: "活动已申请，等待审核。" }
+        format.json { render :show, status: :created, location: @event }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @event.errors, status: :unprocessable_entity }
+      end
     end
   end
 
   # PATCH/PUT /events/1 or /events/1.json
   def update
-    if @event.update(event_params)
-      redirect_to @event, notice: '活动信息已更新。'
-    else
-      render :edit
+    respond_to do |format|
+      if @event.update(event_params)
+        format.html { redirect_to @event, notice: "活动已更新。" }
+        format.json { render :show, status: :ok, location: @event }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @event.errors, status: :unprocessable_entity }
+      end
     end
   end
 

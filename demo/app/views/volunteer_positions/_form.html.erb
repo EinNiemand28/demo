@@ -1,0 +1,43 @@
+<%= form_with(model: [event, volunteer_position], local: true) do |f| %>
+  <% if volunteer_position.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(volunteer_position.errors.count, "错误") %> 阻止岗位被保存：</h2>
+      <ul>
+        <% volunteer_position.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </div>
+
+  <div class="field">
+    <%= f.label :description %><br />
+    <%= f.text_area :description %>
+  </div>
+
+  <div class="field">
+    <%= f.label :required_number %>
+    <%= f.number_field :required_number, min: 0 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :volunteer_hours %>
+    <%= f.number_field :volunteer_hours, step: 0.1, min: 0 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :registration_deadline %><br />
+    <%= f.datetime_select :registration_deadline %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit '保存'%>
+  </div>
+<% end %>
+
+<%= link_to '返回活动', event_path(event) %>

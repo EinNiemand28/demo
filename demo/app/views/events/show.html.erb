@@ -9,24 +9,27 @@
 <p><strong>报名人数/最大参与人数:</strong> <%= @event.participants.count %> / <%= @event.max_participants %></p>
 <p><strong>组织者:</strong> <%= @event.organizer_teacher.name %></p>
 
+<hr>
+
 <h2>关联教师</h2>
 <ul>
   <% @event.teachers.each do |teacher| %>
     <li>
-      <%= teacher.name %>
+      <%= teacher.name %> , 
+      <%= teacher.contact_info %>
       <% if current_user.admin? || current_user == @event.organizer_teacher %>
-        <%= button_to '移除', event_teacher_event_path(@event, teacher.teacher_events.find_by(event: @event)), method: :delete %>
+        <%= link_to '移除', event_teacher_event_path(@event, teacher.teacher_events.find_by(event: @event)), data: { turbo_method: :delete } %>
       <% end %>
     </li>
   <% end %>
 </ul>
 
 <% if current_user.admin? || current_user == @event.organizer_teacher %>
-  <h3>添加教师</h3>
+  <%# <h3>添加教师</h3> %>
   <%= form_with url: event_teacher_events_path(@event), data: { turbo_method: :post } do |f| %>
     <div class="form-group">
-      <%= label_tag :user_id, "选择教师" %>
-      <%= select_tag :user_id, options_for_select(User.where(role_level: :teacher).map { |teacher| ["#{teacher.name} (#{teacher.email})", teacher.id] }), prompt: "请选择教师", class: "form-control" %>
+      <%# <%= label_tag :user_id, "选择教师" %>
+      <%= select_tag :user_id, options_for_select(User.where(role_level: :teacher).map { |teacher| ["#{teacher.name} (#{teacher.contact_info})", teacher.id] }), prompt: "请选择教师", class: "form-control" %>
     </div>
     <%= f.submit '关联教师'%>
   <% end %>
@@ -34,7 +37,46 @@
 
 <hr>
 
-<% if user_signed_in?%>
+<h2>志愿者岗位</h2>
+
+<% if user_signed_in? && (current_user.admin? || current_user == @event.organizer_teacher) %>
+  <%= link_to '创建新志愿者岗位', new_event_volunteer_position_path(@event) %>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>岗位名称</th>
+      <th>描述</th>
+      <th>需求人数</th>
+      <th>志愿时长</th>
+      <th>报名截止时间</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @event.volunteer_positions.each do |position| %>
+      <tr>
+        <td><%= link_to position.name, event_volunteer_position_path(@event, position) %></td>
+        <td><%= truncate(position.description, length: 50) %></td>
+        <td><%= position.required_number %></td>
+        <td><%= position.volunteer_hours %> 小时</td>
+        <td><%= position.registration_deadline.strftime("%Y-%m-%d %H:%M") %></td>
+        <td>
+          <%= link_to '查看', event_volunteer_position_path(@event, position) %>
+          <% if current_user.admin? || (current_user.teacher? && position.event.organizer_teacher == current_user) %>
+            <%= link_to '编辑', edit_event_volunteer_position_path(@event, position) %>
+            <%= link_to '删除', event_volunteer_position_path(@event, position), data: { turbo_method: :delete, turbo_confirm: "确定要删除岗位 #{position.name} 吗？" } %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<hr>
+
+<% if user_signed_in? %>
   <% if current_user.admin? || @event.organizer_teacher == current_user %>
     <%= link_to '编辑活动', edit_event_path(@event) %>
     <%= link_to '删除活动', event_path(@event), data: {

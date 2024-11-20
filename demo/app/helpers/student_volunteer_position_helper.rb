@@ -1,0 +1,2 @@
+module StudentVolunteerPositionHelper
+end

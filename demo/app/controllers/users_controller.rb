@@ -27,11 +27,14 @@ class UsersController < ApplicationController
     user_params.each do |k, v|
       @user[k] = v unless v.blank?
     end
-    if @user.save
-      redirect_to @user, notice: '用户信息已更新。'
-    else
-      Rails.logger.debug @user.errors.full_messages
-      render :edit
+    respond_to do |format|
+      if @user.save
+        format.html { redirect_to @user, notice: '用户信息已更新。' }
+        format.json { render :show, status: :ok, location: @user }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
     end
   end
 

@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Volunteer positions" %>
+
+<h1>Volunteer positions</h1>
+
+<div id="volunteer_positions">
+  <% @volunteer_positions.each do |volunteer_position| %>
+    <%= render volunteer_position %>
+    <p>
+      <%= link_to "Show this volunteer position", volunteer_position %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New volunteer position", new_volunteer_position_path %>

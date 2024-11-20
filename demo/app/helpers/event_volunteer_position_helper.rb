@@ -1,0 +1,2 @@
+module EventVolunteerPositionHelper
+end

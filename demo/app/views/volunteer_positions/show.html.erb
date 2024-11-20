@@ -1,0 +1,73 @@
+<h1><%= @volunteer_position.name %></h1>
+
+<p><strong>描述:</strong> <%= @volunteer_position.description %></p>
+<p><strong>已有人数/需求人数:</strong> <%= @volunteer_position.volunteers.count %> / <%= @volunteer_position.required_number %></p>
+<p><strong>志愿时长:</strong> <%= @volunteer_position.volunteer_hours %> 小时</p>
+<p><strong>报名截止时间:</strong> <%= @volunteer_position.registration_deadline.strftime("%Y-%m-%d %H:%M") %></p>
+<p><strong>活动:</strong> <%= link_to @event.title, event_path(@event) %></p>
+
+<hr>
+<% if user_signed_in? && (current_user.admin? || current_user.teacher?) %>
+  <h2>志愿者申请列表</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>学生姓名</th>
+        <th>联系方式</th>
+        <th>报名时间</th>
+        <th>状态</th>
+        <% if current_user.admin? || @event.organizer_teacher == current_user %>
+          <th>操作</th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @volunteer_position.student_volunteer_positions.each do |registration| %>
+        <tr>
+          <td><%= registration.user.name %></td>
+          <td><%= registration.user.contact_info %></td>
+          <td><%= registration.registration_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= registration.status.humanize %></td>
+          <% if current_user.admin? || @event.organizer_teacher == current_user %>
+            <td>
+              <% if registration.pending? %>
+                <%= link_to '批准', approve_event_volunteer_position_path(@event, @volunteer_position, registration_id: registration.id), data: {
+                  turbo_method: :patch,
+                  turbo_confirm: "确定要批准学生 #{registration.user.name} 的申请吗？"
+                } %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+<hr>
+<% end %>
+
+
+<% if user_signed_in? %>
+  <% if current_user.student? %>
+    <% if @event.status == 'ongoing' %>
+      <% if current_user.registered_volunteer_positions.include?(@volunteer_position) %>
+        您已成功报名该岗位。
+        <%= button_to '取消申请', cancel_event_volunteer_position_path(@event, @volunteer_position), method: :patch, data: {
+          turbo_confirm: "确定要取消申请岗位 #{@volunteer_position.name} 吗？"
+        } %>
+      <% else %>
+        <%= button_to '报名申请', apply_event_volunteer_position_path(@event, @volunteer_position), method: :post %>
+      <% end %>
+    <% else %>
+      <p>活动已结束或未开放申请。</p>
+    <% end %>
+  <% elsif current_user.admin? || @volunteer_position.event.organizer_teacher == current_user %>
+    <%= link_to '编辑', edit_event_volunteer_position_path(@event, @volunteer_position) %>
+    <%= link_to '删除', event_volunteer_position_path(@event, @volunteer_position), data: {
+      turbo_method: :delete,
+      turbo_confirm: "确定要删除岗位 #{@volunteer_position.name} 吗？"
+    } %>
+  <% end %>
+<% end %>
+
+<%= link_to "返回活动页面", event_path(@event) %>

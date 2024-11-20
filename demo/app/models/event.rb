@@ -18,8 +18,10 @@ class Event < ApplicationRecord
   has_many :teacher_events, foreign_key: "event_id", dependent: :destroy
   has_many :teachers, through: :teacher_events, source: :user
   has_many :student_events, foreign_key: "event_id", dependent: :destroy
-  has_many :registered_student_events, -> { where(status: :registered) }, class_name: "StudentEvent"
-  has_many :participants, through: :registered_student_events, source: :user
+  has_many :participants, -> { where(student_events: { status: :registered }) }, through: :student_events, source: :user
+
+  has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
+  has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
 
   private
   def start_time_before_end_time

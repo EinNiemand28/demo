@@ -7,12 +7,16 @@ class StudentEventsController < ApplicationController
     unless current_user.student?
       redirect_to @event, alert: '只有学生可以报名活动。' and return
     end
+    unless @event.registration_deadline >= Time.now
+      redirect_to @event, alert: '报名已截止。' and return
+    end
+    unless @event.max_participants > @event.participants.count
+      redirect_to @event, alert: '报名人数已满。' and return
+    end
 
     @student_event = current_user.student_events.find_by(event: @event)
     if @student_event&.registered?
       redirect_to @event, alert: '您已报名该活动。' and return
-    elsif @event.max_participants <= @event.registered_student_events.count
-      redirect_to @event, alert: '报名人数已满。' and return
     else
       if @student_event.nil?
         @student_event = current_user.student_events.build(event: @event)
@@ -26,7 +30,6 @@ class StudentEventsController < ApplicationController
   end
 
   def destroy
-    @student_event = current_user.student_events.find_by(event: @event)
     if @student_event&.update(status: :canceled)
       redirect_to @event, notice: '取消报名成功。'
     else

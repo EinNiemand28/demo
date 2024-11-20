@@ -7,6 +7,16 @@ Rails.application.routes.draw do
     end
     resources :student_events, only: [:create, :destroy]
     resources :teacher_events, only: [:create, :destroy]
+
+    resources :volunteer_positions do
+      member do
+        post :apply, to: "student_volunteer_positions#create", as: :apply
+        patch "approve/:registration_id", to: "student_volunteer_positions#approve", as: :approve
+        patch "cancel", to: "student_volunteer_positions#cancel", as: :cancel
+      end
+    end
+    # resources :volunteer_positions, only: [] do
+    # end
   end
   resources :users
   get "welcome/index"

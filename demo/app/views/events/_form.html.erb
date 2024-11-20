@@ -42,7 +42,7 @@
 
   <div class="field">
     <%= f.label :max_participants %>
-    <%= f.number_field :max_participants %>
+    <%= f.number_field :max_participants, min: 0 %>
   </div>
 
   <div class="field">

@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  event: one
+  name: MyString
+  description: MyText
+  required_number: 1
+  volunteer_hours: 1.5
+  registration_deadline: 2024-11-19 15:04:30
+
+two:
+  event: two
+  name: MyString
+  description: MyText
+  required_number: 1
+  volunteer_hours: 1.5
+  registration_deadline: 2024-11-19 15:04:30

@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  volunteer_position: one
+  registration_time: 2024-11-19 16:20:40
+  status: 1
+
+two:
+  user: two
+  volunteer_position: two
+  registration_time: 2024-11-19 16:20:40
+  status: 1
