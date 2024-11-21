@@ -2,6 +2,7 @@ class TeacherEventsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_event
   before_action :authorize_user!
+  before_action :check_time
 
   def create
     teacher = User.find_by(id: params[:user_id], role_level: :teacher)
@@ -27,6 +28,12 @@ class TeacherEventsController < ApplicationController
   end
 
   private
+
+  def check_time
+    unless @event.start_time >= Time.current || current_user.admin?
+      redirect_to @event, alert: '活动已开始，无法进行操作。'
+    end
+  end
 
   def set_event
     @event = Event.find(params[:event_id])

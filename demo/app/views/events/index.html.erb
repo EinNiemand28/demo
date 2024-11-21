@@ -22,8 +22,8 @@
       <tr>
         <td><%= link_to event.title, event_path(event) %></td>
         <td><%= truncate(event.description, length: 50) %></td>
-        <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
-        <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+        <td><%= format_datetime(event.start_time) %></td>
+        <td><%= format_datetime(event.end_time) %></td>
         <td><%= event.location %></td>
         <td><%= event.status.humanize %></td>
         <td>
@@ -67,8 +67,8 @@
         <tr>
           <td><%= link_to event.title, event_path(event) %></td>
           <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
-          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= format_datetime(event.start_time) %></td>
+          <td><%= format_datetime(event.end_time) %></td>
           <td><%= event.location %></td>
           <td><%= event.status.humanize %></td>
           <td>
@@ -112,13 +112,15 @@
         <tr>
           <td><%= link_to event.title, event_path(event) %></td>
           <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
-          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= format_datetime(event.start_time) %></td>
+          <td><%= format_datetime(event.end_time) %></td>
           <td><%= event.location %></td>
           <td><%= event.status.humanize %></td>
           <td>
             <%= link_to '查看', event_path(event) %>
-            <%= link_to '取消报名', event_student_event_path(event, current_user.student_events.find_by(event: event)), data: { turbo_method: :delete } %>
+            <% if event.status == "ongoing" %>
+              <%= link_to '取消报名', event_student_event_path(event, current_user.student_events.find_by(event: event)), data: { turbo_method: :delete } %>
+            <% end %>
           </td>
         </tr>
       <% end %>
@@ -145,8 +147,8 @@
         <tr>
           <td><%= link_to event.title, event_path(event) %></td>
           <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
-          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= format_datetime(event.start_time) %></td>
+          <td><%= format_datetime(event.end_time) %></td>
           <td><%= event.location %></td>
           <td><%= event.status.humanize %></td>
           <td>
@@ -174,8 +176,8 @@
         <tr>
           <td><%= link_to event.title, event_path(event) %></td>
           <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= event.start_time.strftime("%Y-%m-%d %H:%M") %></td>
-          <td><%= event.end_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= format_datetime(event.start_time) %></td>
+          <td><%= format_datetime(event.end_time) %></td>
           <td><%= event.location %></td>
           <td><%= event.status.humanize %></td>
           <td>

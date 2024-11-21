@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_19_093428) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_21_101112) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -63,6 +63,19 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_19_093428) do
     t.index ["organizer_teacher_id"], name: "index_events_on_organizer_teacher_id"
   end
 
+  create_table "feedbacks", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "event_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "rating", null: false
+    t.text "comment", null: false
+    t.boolean "is_anonymous", default: false, null: false
+    t.datetime "feedback_time", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_feedbacks_on_event_id"
+    t.index ["user_id"], name: "index_feedbacks_on_user_id"
+  end
+
   create_table "student_events", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "event_id", null: false
@@ -102,7 +115,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_19_093428) do
     t.string "telephone", default: ""
     t.string "password"
     t.float "volunteer_hours", default: 0.0
-    t.string "profile_picture", default: "default_avatar.png"
     t.integer "role_level", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -131,6 +143,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_19_093428) do
   add_foreign_key "event_volunteer_positions", "events"
   add_foreign_key "event_volunteer_positions", "volunteer_positions"
   add_foreign_key "events", "users", column: "organizer_teacher_id"
+  add_foreign_key "feedbacks", "events"
+  add_foreign_key "feedbacks", "users"
   add_foreign_key "student_events", "events"
   add_foreign_key "student_events", "users"
   add_foreign_key "student_volunteer_positions", "users"

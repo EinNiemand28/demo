@@ -27,8 +27,9 @@
 
 <p>
   <strong>个人头像:</strong><br />
-  <%= image_tag @user.profile_picture.variant(resize: "100x100") if @user.profile_picture.attached? %>
+  <%= user_avatar(@user) %>
 </p>
-
-<%= link_to '编辑用户', edit_user_path(@user) %> |
-<%= link_to '返回用户列表', users_path %>
+<% if current_user.admin? || current_user == @user %>
+  <%= link_to '修改信息', edit_user_path(@user) %> |
+<% end %>
+<%= back_link '返回' %>

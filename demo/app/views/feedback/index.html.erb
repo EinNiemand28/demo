@@ -1,0 +1,36 @@
+<h1><%= @event.title %> - 活动反馈</h1>
+
+<div class="feedbacks">
+  <% if @feedbacks.any? %>
+    <% @feedbacks.each do |feedback| %>
+      <div class="feedback">
+        <p>
+            Posted by 
+            <% if feedback.is_anonymous %>
+                匿名用户
+            <% else %>
+                <%= link_to feedback.user.name, user_path(feedback.user) %>
+            <% end %>, 
+            <%= time_ago_in_words feedback.feedback_time %> ago. 
+            <% if current_user == feedback.user || current_user&.admin? %>
+                <%= link_to '编辑', edit_event_feedback_path(@event, feedback) %>
+                <%= link_to '删除', event_feedback_path(@event, feedback), data: {
+                    turbo_method: :delete,
+                    turbo_confirm: '确定要删除这条反馈吗？'
+                } %>
+            <% end %>
+        </p>
+        <p>评分：<%= "★" * feedback.rating %></p>
+        <p>评论：<%= feedback.comment %></p>
+      </div>
+    <% end %>
+  <% else %>
+    <p>暂无反馈。</p>
+  <% end %>
+</div>
+
+<% if current_user&.student? && @event.participants.include?(current_user) %>
+  <%= link_to '提交反馈', new_event_feedback_path(@event) %>
+<% end %>
+
+<%= link_to '返回活动详情', event_path(@event) %>

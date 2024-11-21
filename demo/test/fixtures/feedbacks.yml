@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  event: one
+  user: one
+  rating: 1
+  comment: MyText
+  is_anonymous: false
+  feedback_time: 2024-11-21 11:51:19
+
+two:
+  event: two
+  user: two
+  rating: 1
+  comment: MyText
+  is_anonymous: false
+  feedback_time: 2024-11-21 11:51:19

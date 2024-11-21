@@ -1,12 +1,17 @@
 <h1><%= @event.title %></h1>
 
 <p><strong>描述:</strong> <%= @event.description %></p>
-<p><strong>开始时间:</strong> <%= @event.start_time.strftime("%Y-%m-%d %H:%M") %></p>
-<p><strong>结束时间:</strong> <%= @event.end_time.strftime("%Y-%m-%d %H:%M") %></p>
+<p><strong>开始时间:</strong> <%= format_datetime(@event.start_time) %></p>
+<p><strong>结束时间:</strong> <%= format_datetime(@event.end_time) %></p>
 <p><strong>地点:</strong> <%= @event.location %></p>
-<p><strong>状态:</strong> <%= @event.status.humanize %></p>
-<p><strong>报名截止时间:</strong> <%= @event.registration_deadline.strftime("%Y-%m-%d %H:%M") %></p>
-<p><strong>报名人数/最大参与人数:</strong> <%= @event.participants.count %> / <%= @event.max_participants %></p>
+<p>
+  <strong>状态:</strong> <%= @event.status.humanize %>
+  <% if @event.status == "finished" %>
+    <%= link_to "查看活动反馈", event_feedbacks_path(@event) %>
+  <% end %>
+</p>
+<p><strong>报名截止时间:</strong> <%= format_datetime(@event.registration_deadline) %></p>
+<p><strong>报名人数 / 最大参与人数:</strong> <%= @event.participants.count %> / <%= @event.max_participants %></p>
 <p><strong>组织者:</strong> <%= @event.organizer_teacher.name %></p>
 
 <hr>
@@ -61,7 +66,7 @@
         <td><%= truncate(position.description, length: 50) %></td>
         <td><%= position.required_number %></td>
         <td><%= position.volunteer_hours %> 小时</td>
-        <td><%= position.registration_deadline.strftime("%Y-%m-%d %H:%M") %></td>
+        <td><%= format_datetime(position.registration_deadline) %></td>
         <td>
           <%= link_to '查看', event_volunteer_position_path(@event, position) %>
           <% if current_user.admin? || (current_user.teacher? && position.event.organizer_teacher == current_user) %>
@@ -86,7 +91,7 @@
   <% else %>
     <% if current_user.registered_events.include?(@event) %>
       <%= button_to '取消报名', event_student_event_path(@event, current_user.student_events.find_by(event: @event)), method: :delete %>
-    <% elsif @event.status == 'ongoing' %>
+    <% elsif @event.status.humanize == 'ongoing' %>
       <%= button_to '报名参加', event_student_events_path(@event), method: :post %>
     <% else %>
       <p>报名已满或活动不允许报名。</p>

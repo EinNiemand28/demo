@@ -2,13 +2,11 @@ class StudentEventsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_event, only: [:create, :destroy]
   before_action :set_student_event, only: [:destroy]
+  before_action :check_time
 
   def create
     unless current_user.student?
       redirect_to @event, alert: '只有学生可以报名活动。' and return
-    end
-    unless @event.registration_deadline >= Time.now
-      redirect_to @event, alert: '报名已截止。' and return
     end
     unless @event.max_participants > @event.participants.count
       redirect_to @event, alert: '报名人数已满。' and return
@@ -23,7 +21,7 @@ class StudentEventsController < ApplicationController
       else
         @student_event.status = :registered
       end
-      @student_event.registration_time = Time.now
+      @student_event.registration_time = Time.current
       @student_event.save
       redirect_to @event, notice: '报名成功。'
     end
@@ -38,6 +36,12 @@ class StudentEventsController < ApplicationController
   end
 
   private
+
+  def check_time
+    unless @event.registration_deadline >= Time.current || current_user.admin?
+      redirect_to @event, alert: '报名已截止。'
+    end
+  end
 
   def set_event
     @event = Event.find(params[:event_id])

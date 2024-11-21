@@ -12,16 +12,23 @@ class User < ApplicationRecord
   has_many :organized_events, class_name: "Event", foreign_key: "organizer_teacher_id", dependent: :destroy
   has_many :teacher_events, foreign_key: "user_id", dependent: :destroy
   has_many :associated_events, through: :teacher_events, source: :event
+
   has_many :student_events, foreign_key: "user_id", dependent: :destroy
   has_many :registered_events, -> { where(student_events: { status: :registered }) }, through: :student_events, source: :event
 
   has_many :student_volunteer_positions, foreign_key: "user_id", dependent: :destroy
   has_many :registered_volunteer_positions, -> { where(student_volunteer_positions: { status: :approved }) }, through: :student_volunteer_positions, source: :volunteer_position
 
-  enum role_level: { student: 0, teacher: 1, admin: 2 }
+  has_many :feedbacks, dependent: :destroy
+
+  enum :role_level, { student: 0, teacher: 1, admin: 2 }
   after_initialize :set_default_role, if: :new_record?
 
-  has_one_attached :profile_picture
+  has_one_attached :avatar_picture do |attachable|
+    attachable.variant :thumb, resize_to_limit: [100, 100]
+  end
+
+  validate :acceptable_avatar_picture
 
   attr_writer :login
 
@@ -67,6 +74,19 @@ class User < ApplicationRecord
   def email_or_telephone_present
     if email.blank? && telephone.blank?
       errors.add(:base, "邮箱和手机号码至少填写一个")
+    end
+  end
+
+  def acceptable_avatar_picture
+    return unless avatar_picture.attached?
+
+    unless avatar_picture.blob.byte_size <= 5.megabytes
+      errors.add(:avatar_picture, "图片大小不能超过5MB")
+    end
+
+    acceptable_types = ["image/jpeg", "image/png"]
+    unless acceptable_types.include?(avatar_picture.content_type)
+      errors.add(:avatar_picture, "图片格式必须为 JPEG 或 PNG ")
     end
   end
 end

@@ -1,5 +1,5 @@
 class Event < ApplicationRecord
-  enum status: { pending: 0, ongoing: 1, finished: 2, canceled: 3 }
+  enum :status, { pending: 0, ongoing: 1, finished: 2, canceled: 3 }
 
   belongs_to :organizer_teacher, class_name: "User", foreign_key: "organizer_teacher_id"
   
@@ -21,7 +21,9 @@ class Event < ApplicationRecord
   has_many :participants, -> { where(student_events: { status: :registered }) }, through: :student_events, source: :user
 
   has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
-  has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
+  # has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
+  
+  has_many :feedbacks, dependent: :destroy
 
   private
   def start_time_before_end_time
@@ -31,8 +33,8 @@ class Event < ApplicationRecord
   end
 
   def registration_deadline_before_start_time
-    if registration_deadline >= start_time
-      errors.add(:registration_deadline, "报名截止时间必须早于开始时间")
+    if registration_deadline > start_time
+      errors.add(:registration_deadline, "报名截止时间不得晚于开始时间")
     end
   end
 end

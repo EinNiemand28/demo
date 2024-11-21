@@ -1,9 +1,9 @@
 <h1><%= @volunteer_position.name %></h1>
 
 <p><strong>描述:</strong> <%= @volunteer_position.description %></p>
-<p><strong>已有人数/需求人数:</strong> <%= @volunteer_position.volunteers.count %> / <%= @volunteer_position.required_number %></p>
+<p><strong>已有人数 / 需求人数:</strong> <%= @volunteer_position.volunteers.count %> / <%= @volunteer_position.required_number %></p>
 <p><strong>志愿时长:</strong> <%= @volunteer_position.volunteer_hours %> 小时</p>
-<p><strong>报名截止时间:</strong> <%= @volunteer_position.registration_deadline.strftime("%Y-%m-%d %H:%M") %></p>
+<p><strong>报名截止时间:</strong> <%= format_datetime(@volunteer_position.registration_deadline) %></p>
 <p><strong>活动:</strong> <%= link_to @event.title, event_path(@event) %></p>
 
 <hr>
@@ -24,9 +24,9 @@
     <tbody>
       <% @volunteer_position.student_volunteer_positions.each do |registration| %>
         <tr>
-          <td><%= registration.user.name %></td>
+          <td><%= link_to registration.user.name, user_path(registration.user) %></td>
           <td><%= registration.user.contact_info %></td>
-          <td><%= registration.registration_time.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= format_datetime(registration.registration_time) %></td>
           <td><%= registration.status.humanize %></td>
           <% if current_user.admin? || @event.organizer_teacher == current_user %>
             <td>
@@ -52,6 +52,11 @@
     <% if @event.status == 'ongoing' %>
       <% if current_user.registered_volunteer_positions.include?(@volunteer_position) %>
         您已成功报名该岗位。
+        <%= button_to '取消申请', cancel_event_volunteer_position_path(@event, @volunteer_position), method: :patch, data: {
+          turbo_confirm: "确定要取消申请岗位 #{@volunteer_position.name} 吗？"
+        } %>
+      <% elsif current_user.student_volunteer_positions.exists?(volunteer_position: @volunteer_position, status: :pending) %>
+        您已申请该岗位，等待批准。
         <%= button_to '取消申请', cancel_event_volunteer_position_path(@event, @volunteer_position), method: :patch, data: {
           turbo_confirm: "确定要取消申请岗位 #{@volunteer_position.name} 吗？"
         } %>

@@ -7,7 +7,7 @@ class StudentVolunteerPositionsController < ApplicationController
     unless current_user.student?
       redirect_back_with_alert('只有学生可以报名志愿者岗位。') and return
     end
-    unless @volunteer_position.registration_deadline >= Time.now
+    unless @volunteer_position.registration_deadline >= Time.current
       redirect_back_with_alert('报名已截止。') and return
     end
     unless @volunteer_position.required_number > @volunteer_position.volunteers.count
@@ -24,11 +24,11 @@ class StudentVolunteerPositionsController < ApplicationController
         @student_volunteer_position = current_user.student_volunteer_positions.build(
           volunteer_position: @volunteer_position,
           status: :pending,
-          registration_time: Time.now
+          registration_time: Time.current
         )
       else
         @student_volunteer_position.status = :pending
-        @student_volunteer_position.registration_time = Time.now
+        @student_volunteer_position.registration_time = Time.current
       end
       @student_volunteer_position.save
       redirect_back_with_notice('已提交申请。')

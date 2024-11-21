@@ -33,7 +33,12 @@
         <%= link_to "sign up", new_user_registration_path %>
       <% end %>
       <br /><br />
-      <%= link_to "home", root_path %>
+      <% if user_signed_in? %>
+        <%= link_to "profile", user_path(current_user) %>
+      <% else %>
+        <%= link_to "profile", new_user_session_path %>
+      <% end %>
+      | <%= link_to "home", root_path %>
 
       <br /><br />
       <div id="footer">

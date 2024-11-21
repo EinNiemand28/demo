@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_admin!
-  before_action :set_user, only: %i[ show edit update destroy ]
+  before_action :set_user, only: %i[show edit update destroy]
+  before_action :authorize_user!, only: %i[edit update destroy]
 
   # GET /users or /users.json
   def index
@@ -24,10 +24,13 @@ class UsersController < ApplicationController
         redirect_to @user, alert: '不能修改其他管理员的信息。' and return
       end
     end
-    user_params.each do |k, v|
+    user_params.except(:avatar_picture).each do |k, v|
       @user[k] = v unless v.blank?
     end
     respond_to do |format|
+      if user_params[:avatar_picture].present?
+        @user.avatar_picture.attach(user_params[:avatar_picture])
+      end
       if @user.save
         format.html { redirect_to @user, notice: '用户信息已更新。' }
         format.json { render :show, status: :ok, location: @user }
@@ -54,6 +57,12 @@ class UsersController < ApplicationController
     end
 
     def user_params
-      params.require(:user).permit(:name, :email, :telephone, :role_level, :password, :password_confirmation, :profile_picture)
+      params.require(:user).permit(:name, :email, :telephone, :role_level, :password, :password_confirmation, :avatar_picture)
+    end
+
+    def authorize_user!
+      unless current_user.admin? || @user == current_user
+        redirect_to users_path, alert: '您没有权限访问此页面。'
+      end
     end
 end

@@ -15,8 +15,7 @@ Rails.application.routes.draw do
         patch "cancel", to: "student_volunteer_positions#cancel", as: :cancel
       end
     end
-    # resources :volunteer_positions, only: [] do
-    # end
+    resources :feedbacks, except: [:show]
   end
   resources :users
   get "welcome/index"
