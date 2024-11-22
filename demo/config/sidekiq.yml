@@ -1,9 +1,15 @@
 :concurrency: 2
+:timeout: 8
 :queues:
   - default
 
 :scheduler:
   :schedule:
     update_event_status:
+      name: "Update Event Status - Every 1 minute"
       cron: "*/1 * * * *"
       class: UpdateEventStatusJob
+    check_upcoming_events:
+      name: "Check Upcoming Events - Every 10 minutes"
+      cron: "*/1 * * * *"
+      class: CheckUpcomingEventsJob

@@ -28,8 +28,13 @@
 <p>
   <strong>个人头像:</strong><br />
   <%= user_avatar(@user) %>
+  <% if current_user.admin? || current_user == @user %>
+    <%= button_to "恢复默认头像", reset_avatar_user_path(@user), method: :delete, data: {
+      turbo_confirm: '确定要恢复默认头像吗？'
+    } %>
+  <% end %>
 </p>
 <% if current_user.admin? || current_user == @user %>
   <%= link_to '修改信息', edit_user_path(@user) %> |
 <% end %>
-<%= back_link '返回' %>
+<%= back_link '返回上一个页面' %>

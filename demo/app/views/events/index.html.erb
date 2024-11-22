@@ -39,7 +39,7 @@
               turbo_confirm: "确定要取消活动 #{event.title} 吗？"
             } %>
           <% end %>
-          <% if current_user.student? && event.status == 'ongoing' %>
+          <% if current_user.student? && event.status == 'upcoming' %>
             <%= link_to '报名参加', event_student_events_path(event), data: { turbo_method: :post } %>
           <% end %>
         </td>
@@ -63,7 +63,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @upcoming_events.each do |event| %>
+      <% @pending_events.each do |event| %>
         <tr>
           <td><%= link_to event.title, event_path(event) %></td>
           <td><%= truncate(event.description, length: 50) %></td>
@@ -118,8 +118,38 @@
           <td><%= event.status.humanize %></td>
           <td>
             <%= link_to '查看', event_path(event) %>
-            <% if event.status == "ongoing" %>
+            <% if event.status == "upcoming" %>
               <%= link_to '取消报名', event_student_event_path(event, current_user.student_events.find_by(event: event)), data: { turbo_method: :delete } %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <h2>已申请的志愿者岗位</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>活动</th>
+        <th>岗位名称</th>
+        <th>志愿时长</th>
+        <th>报名截止时间</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% current_user.student_volunteer_positions.includes(:volunteer_position => :event).each do |registration| %>
+        <tr>
+          <td><%= link_to registration.volunteer_position.event.title, event_path(registration.volunteer_position.event) %></td>
+          <td><%= registration.volunteer_position.name %></td>
+          <td><%= registration.volunteer_position.volunteer_hours %> 小时</td>
+          <td><%= format_datetime(registration.volunteer_position.registration_deadline) %></td>
+          <td><%= registration.status.humanize %></td>
+          <td>
+            <% if registration.pending? %>
+              <%= button_to '取消申请', cancel_event_volunteer_position_path(registration.volunteer_position.event, registration.volunteer_position), method: :patch, data: { turbo_confirm: "确定要取消申请吗？" } %>
             <% end %>
           </td>
         </tr>

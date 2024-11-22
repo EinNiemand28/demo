@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  content: MyText
+  notification_time: 2024-11-21 22:46:57
+  is_read: false
+
+two:
+  user: two
+  content: MyText
+  notification_time: 2024-11-21 22:46:57
+  is_read: false

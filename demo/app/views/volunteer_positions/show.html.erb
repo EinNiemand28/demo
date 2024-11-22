@@ -49,7 +49,7 @@
 
 <% if user_signed_in? %>
   <% if current_user.student? %>
-    <% if @event.status == 'ongoing' %>
+    <% if @event.status == 'upcoming' %>
       <% if current_user.registered_volunteer_positions.include?(@volunteer_position) %>
         您已成功报名该岗位。
         <%= button_to '取消申请', cancel_event_volunteer_position_path(@event, @volunteer_position), method: :patch, data: {
@@ -64,7 +64,7 @@
         <%= button_to '报名申请', apply_event_volunteer_position_path(@event, @volunteer_position), method: :post %>
       <% end %>
     <% else %>
-      <p>活动已结束或未开放申请。</p>
+      <p>申请已结束或未开放。</p>
     <% end %>
   <% elsif current_user.admin? || @volunteer_position.event.organizer_teacher == current_user %>
     <%= link_to '编辑', edit_event_volunteer_position_path(@event, @volunteer_position) %>

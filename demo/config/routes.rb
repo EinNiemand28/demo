@@ -17,7 +17,16 @@ Rails.application.routes.draw do
     end
     resources :feedbacks, except: [:show]
   end
-  resources :users
+  resources :users do
+    member do
+      delete "reset_avatar", to: "users#reset_avatar", as: :reset_avatar
+    end
+  end
+  resources :notifications do
+    member do
+      patch :toggle_read
+    end
+  end
   get "welcome/index"
   root "welcome#index"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

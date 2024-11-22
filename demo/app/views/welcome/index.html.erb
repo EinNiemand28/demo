@@ -1,8 +1,25 @@
 <h1>这是一个简易的校园活动管理系统</h1>
 <p>你可以在这里查看活动信息，报名参加活动，以及查看自己的报名情况。</p>
 
-<% if user_signed_in? && current_user.admin? %>
-  <%= link_to '查看所有用户', users_path %>
+<% if user_signed_in? %>
+  <div class="notifications-section">
+    <%= link_to notifications_path do %>
+      查看我的通知
+      <% if current_user.unread_notifications_count > 0 %>
+        <span class="badge">
+          (<%= current_user.unread_notifications_count %> 条未读)
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if current_user.admin? %>
+    <div class="admin-section">
+      <%= link_to '查看所有用户', users_path %> |
+      <%= link_to '创建新通知', new_notification_path %>
+    </div>
+  <% end %>
 <% end %>
+
 <br />
 <%= link_to '查看所有活动', events_path %>

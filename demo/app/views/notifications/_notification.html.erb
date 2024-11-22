@@ -1,0 +1,13 @@
+<tr id="<%= dom_id(notification_user) %>" class="<%= 'unread' unless notification_user.is_read? %>">
+  <td><%= notification_user.notification.content %></td>
+  <td><%= format_datetime(notification_user.notification.notification_time) %></td>
+  <td><%= notification_user.is_read? ? '已读' : '未读' %></td>
+  <td>
+    <%= button_to toggle_read_notification_path(notification_user),
+        method: :patch,
+        data: { turbo_stream: true },
+        class: "button #{notification_user.is_read? ? 'mark-unread' : 'mark-read'}" do %>
+      <%= notification_user.is_read? ? '标记为未读' : '标记为已读' %>
+    <% end %>
+  </td>
+</tr>

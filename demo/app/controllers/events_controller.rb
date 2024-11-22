@@ -1,12 +1,12 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[ show edit update destroy approve cancel]
   before_action :authenticate_user!
+  before_action :set_event, only: %i[ show edit update destroy approve cancel]
   before_action :authorize_user!, only: %i[edit update destroy approve cancel]
 
   # GET /events or /events.json
   def index
-    @events = Event.where(status: [:ongoing, :finished, :canceled])
-    @upcoming_events = Event.where(status: :pending).order(start_time: :asc)
+    @events = Event.where(status: [:upcoming, :ongoing, :finished, :canceled])
+    @pending_events = Event.where(status: :pending).order(start_time: :asc)
     @registered_events = current_user.registered_events if current_user.student?
     @associated_events = current_user.associated_events if current_user.teacher?
     @organized_events = current_user.organized_events if current_user.teacher?
@@ -62,7 +62,8 @@ class EventsController < ApplicationController
 
   def approve
     if current_user.admin?
-      @event.update(status: :ongoing)
+      NotificationService.notify_event_approved(@event)
+      @event.update(status: :upcoming)
       redirect_to @event, notice: '活动已通过审核。'
     else
       redirect_to @event, alert: '您没有权限执行此操作。'

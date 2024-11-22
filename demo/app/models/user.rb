@@ -21,6 +21,9 @@ class User < ApplicationRecord
 
   has_many :feedbacks, dependent: :destroy
 
+  has_many :notification_users, dependent: :destroy
+  has_many :notifications, through: :notification_users, source: :notification
+
   enum :role_level, { student: 0, teacher: 1, admin: 2 }
   after_initialize :set_default_role, if: :new_record?
 
@@ -67,6 +70,14 @@ class User < ApplicationRecord
     else
       email
     end
+  end
+
+  def unread_notifications_count
+    notification_users.where(is_read: false).count
+  end
+
+  def notifications_with_status
+    notification_users.includes(:notification).order(created_at: :desc)
   end
 
   private

@@ -42,6 +42,7 @@ class StudentVolunteerPositionsController < ApplicationController
 
     @student_volunteer_position = @volunteer_position.student_volunteer_positions.find_by(params[:registration_id])
     if @student_volunteer_position.update(status: :approved)
+      NotificationService.notify_volunteer_approved(@student_volunteer_position)
       redirect_back_with_notice('审核成功。')
     else
       redirect_back_with_alert('审核失败。')
