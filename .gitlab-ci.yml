@@ -2,7 +2,7 @@ test-project:
   stage: test
   script:
     - cd project
-    - apt install nodejs npm
+    - apt install nodejs npm -y
     - bundle install
     - npm install
     - npm run build
@@ -16,7 +16,7 @@ deploy-project:
   script:
     - rsync -arv --delete --exclude="*.sqlite3" --exclude="node_modules" ./project /
     - cd /project
-    - apt install nodejs npm
+    - apt install nodejs npm -y
     - bundle install
     - npm install
     - npm run build
