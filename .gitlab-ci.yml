@@ -3,6 +3,8 @@ test-project:
   script:
     - cd project
     - bundle install
+    - npm install
+    - npm run build
     - rails db:migrate RAILS_ENV=test
     - PARALLEL_WORKERS=1 rails test
   only:
@@ -11,9 +13,11 @@ test-project:
 deploy-project:
   stage: deploy
   script:
-    - rsync -arv --delete --exclude="*.sqlite3" ./project /
+    - rsync -arv --delete --exclude="*.sqlite3" --exclude="node_modules" ./project /
     - cd /project
     - bundle install
+    - npm install
+    - npm run build
     - rails db:migrate
     - sv restart project
   only:
