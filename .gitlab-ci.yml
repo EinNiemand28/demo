@@ -8,9 +8,9 @@ test-project:
     # - apt install -y nodejs
     - bundle install
     # - npm config set registry https://registry.npmmirror.com
-    - yarn config set registry https://registry.npmmirror.com
-    - rm -f yarn.lock
-    - yarn cache clean
+    # - yarn config set registry https://registry.npmmirror.com
+    # - rm -f yarn.lock
+    # - yarn cache clean
     - yarn install
     - yarn build
     - rails db:migrate RAILS_ENV=test
@@ -24,8 +24,8 @@ deploy-project:
     - rsync -arv --delete --exclude="*.sqlite3" --exclude="node_modules" ./project /
     - cd /project
     - bundle install
-    # - yarn install
-    # - yarn build
+    - yarn install
+    - yarn build
     - rails db:migrate
     - sv restart project
   only:
