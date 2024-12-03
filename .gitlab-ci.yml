@@ -2,8 +2,10 @@ test-project:
   stage: test
   script:
     - cd project
-    - apt install nodejs npm -y
+    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    - apt install -y nodejs
     - bundle install
+    - npm cache clean --force
     - npm install
     - npm run build
     - rails db:migrate RAILS_ENV=test
@@ -16,8 +18,10 @@ deploy-project:
   script:
     - rsync -arv --delete --exclude="*.sqlite3" --exclude="node_modules" ./project /
     - cd /project
-    - apt install nodejs npm -y
+    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    - apt install -y nodejs
     - bundle install
+    - npm cache clean --force
     - npm install
     - npm run build
     - rails db:migrate
