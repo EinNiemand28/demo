@@ -2,7 +2,9 @@ test-project:
   stage: test
   script:
     - cd project
-    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    - apt remove -y nodejs npm libnode-dev
+    - apt autoremove -y
+    - apt clean
     - apt install -y nodejs
     - bundle install
     - npm cache clean --force
@@ -18,10 +20,7 @@ deploy-project:
   script:
     - rsync -arv --delete --exclude="*.sqlite3" --exclude="node_modules" ./project /
     - cd /project
-    - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    - apt install -y nodejs
     - bundle install
-    - npm cache clean --force
     - npm install
     - npm run build
     - rails db:migrate
