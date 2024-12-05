@@ -3,5 +3,10 @@ class Current < ActiveSupport::CurrentAttributes
   attribute :user_agent, :ip_address
   attribute :user
 
-  delegate :user, to: :session, allow_nil: true
+  # delegate :user, to: :session, allow_nil: true
+
+  def reset
+    super
+    RequestStore.clear!
+  end
 end

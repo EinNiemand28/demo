@@ -11,7 +11,17 @@ module SignInHelper
     }, as: :json
     
     @session = user.sessions.last
-    cookies[:session_token] = @session.id if @session
+    if @session
+      cookies[:session_token] = @session.id
+      # 设置 Current 对象
+      Current.session = @session
+      Current.user = user
+    end
+  end
+
+  def sign_out
+    delete sign_out_path
+    Current.reset
   end
 end
 

@@ -35,13 +35,15 @@ class SessionsController < ApplicationController
   end
 
   def destroy
+    current_session = Current.session
     if params[:id]
       @session = Current.user.sessions.find(params[:id])
       @session.destroy
     else
-      Current.session&.destroy
+      current_session.destroy if current_session
     end
     cookies.delete(:session_token)
+    Current.reset
     redirect_to root_path, notice: "Signed out successfully"
   end
 

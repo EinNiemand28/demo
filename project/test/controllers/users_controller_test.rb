@@ -7,9 +7,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     
     # puts "Before sign in"
     sign_in_as(@user)
+    assert Current.user, "用户未正确登录"
     # puts "After sign in"
     # puts "Session: #{@session.inspect}"
     # puts "Cookie: #{cookies[:session_token]}"
+  end
+
+  def teardown
+    Current.reset
   end
 
   test "should get index" do
