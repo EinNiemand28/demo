@@ -4,6 +4,23 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// node_modules/bootstrap/dist/js/bootstrap.esm.js
+var bootstrap_esm_exports = {};
+__export(bootstrap_esm_exports, {
+  Alert: () => Alert,
+  Button: () => Button,
+  Carousel: () => Carousel,
+  Collapse: () => Collapse,
+  Dropdown: () => Dropdown,
+  Modal: () => Modal,
+  Offcanvas: () => Offcanvas,
+  Popover: () => Popover,
+  ScrollSpy: () => ScrollSpy,
+  Tab: () => Tab,
+  Toast: () => Toast,
+  Tooltip: () => Tooltip
+});
+
 // node_modules/@popperjs/core/lib/index.js
 var lib_exports = {};
 __export(lib_exports, {
@@ -5161,6 +5178,9 @@ var Toast = class _Toast extends BaseComponent {
 };
 enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
+
+// app/javascript/application.js
+window.bootstrap = bootstrap_esm_exports;
 /*! Bundled license information:
 
 bootstrap/dist/js/bootstrap.esm.js:
