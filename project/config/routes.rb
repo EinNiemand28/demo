@@ -13,6 +13,10 @@ Rails.application.routes.draw do
   end
   resources :users
 
+  resources :products
+  resources :orders
+  resources :cart
+
   get "home/index"
   root "home#index"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

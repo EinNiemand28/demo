@@ -1,0 +1,89 @@
+<nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-3">
+  <div class="container">
+    <%# 品牌和折叠按钮 %>
+    <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
+      <i class="bi bi-shop me-2 fs-4"></i>
+      <span class="fw-bold text-primary fs-4">MyShop</span>
+    <% end %>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <%# 左侧导航项，增加字体大小 %>
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if current_page?(root_path)}" do %>
+            <i class="bi bi-house-door me-1"></i>首页
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'products'}" do %>
+            <i class="bi bi-grid me-1"></i>商品
+          <% end %>
+        </li>
+        
+        <%# 需要登录才显示的项目 %>
+        <%# TODO!!!! %>
+        <% if Current.user %>
+          <li class="nav-item">
+            <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
+              <i class="bi bi-cart me-1"></i>购物车
+            <% end %>
+          </li>
+          <li class="nav-item">
+            <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'orders'}" do %>
+              <i class="bi bi-receipt me-1"></i>订单
+            <% end %>
+          </li>
+          
+          <%# 管理员可见的项目 %>
+          <% if Current.user.admin? %>
+            <li class="nav-item">
+              <%= link_to users_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'users'}" do %>
+                <i class="bi bi-people me-1"></i>用户管理
+              <% end %>
+            </li>
+          <% end %>
+        <% end %>
+      </ul>
+
+      <%# 右侧用户区域 %>
+      <ul class="navbar-nav align-items-center">
+        <% if Current.user %>
+          <!-- 登录后的下拉菜单，增加字体大小 -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center fs-5" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle me-1"></i>
+              <span>欢迎，<%= Current.user.username %></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <%= link_to user_path(Current.user), class: "dropdown-item" do %>
+                <i class="bi bi-person me-2"></i>个人资料
+              <% end %>
+              <div class="dropdown-divider"></div>
+              <%= button_to sign_out_path, 
+                  method: :delete, 
+                  class: "dropdown-item text-danger",
+                  form: { class: "d-inline" } do %>
+                <i class="bi bi-box-arrow-right me-2"></i>登出
+              <% end %>
+            </ul>
+          </li>
+        <% else %>
+          <li class="nav-item d-flex align-items-center">
+            <%= link_to sign_in_path, class: "nav-link fs-5" do %>
+              <i class="bi bi-box-arrow-in-right me-1"></i>登录
+            <% end %>
+          </li>
+          <li class="nav-item ms-2">
+            <%= link_to sign_up_path, class: "btn btn-primary px-4 py-2 fs-5" do %>
+              <i class="bi bi-person-plus me-1"></i>注册
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</nav>

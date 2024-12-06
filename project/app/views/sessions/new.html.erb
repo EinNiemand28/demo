@@ -11,7 +11,9 @@
                     class: "form-control",
                     required: true,
                     placeholder: "请输入账号" %>
-              <%= form.label :login, "用户名/邮箱/手机号" %>
+              <%= form.label :login do %>
+                <i class="bi bi-person-badge me-1"></i>用户名/邮箱/手机号
+              <% end %>
               <div class="invalid-feedback">
                 请输入账号
               </div>
@@ -22,7 +24,9 @@
                     class: "form-control",
                     required: true,
                     placeholder: "请输入密码" %>
-              <%= form.label :password, "密码" %>
+              <%= form.label :password do %>
+                <i class="bi bi-key me-1"></i>密码
+              <% end %>
               <div class="invalid-feedback">
                 请输入密码
               </div>

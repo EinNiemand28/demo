@@ -15,15 +15,15 @@ class User < ApplicationRecord
   after_initialize :set_default_role, if: :new_record?
 
   def admin?
-    self.role == :admin
+    self.role.to_sym == :admin
   end
 
   def worker?
-    self.role == :worker
+    self.role.to_sym == :worker
   end
 
   def buyer?
-    self.role == :buyer
+    self.role.to_sym == :buyer
   end
     
   validates :username, uniqueness: true, presence: true, length: { minimum: 3, maximum: 50 }
