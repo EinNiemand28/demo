@@ -43,6 +43,12 @@ class User < ApplicationRecord
   normalizes :email, with: -> { _1.strip.downcase }
   normalizes :phone, with: -> { _1.strip }
 
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_fill: [150, 150]
+  end
+
+  validate :acceptable_avatar
+
   # before_validation if: :email_changed?, on: :update do
   #   self.verified = false
   # end
@@ -55,7 +61,37 @@ class User < ApplicationRecord
     where("username = :login OR email = :login OR phone = :login", login: login).first
   end
 
+  scope :search, ->(query) {
+    where('username LIKE :q OR email LIKE :q OR phone LIKE :q', q: "%#{query}%")
+  }
+
+  scope :with_role, ->(role) {
+    where(role: role) if role.present?
+  }
+  def avatar_thumbnail
+    Rails.cache.fetch([self, "avatar_thumbnail"], expires_in: 1.hour) do
+      if avatar.attached?
+        avatar.variant(resize_to_fill: [40, 40]).processed
+      else
+        "default_avatar.png"
+      end
+    end
+  end
+
   private
+
+  def acceptable_avatar
+    return unless avatar.attached?
+
+    unless avatar.blob.byte_size <= 5.megabytes
+      errors.add(:avatar, "图片大小不能超过5MB")
+    end
+
+    acceptable_types = ["image/jpeg", "image/png"]
+    unless acceptable_types.include?(avatar.blob.content_type)
+      errors.add(:avatar, "只支持 JPEG 或 PNG 格式")
+    end
+  end
 
   def set_default_role
     self.role ||= :buyer

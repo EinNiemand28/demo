@@ -14,12 +14,13 @@ class RegistrationsController < ApplicationController
       cookies.signed.permanent[:session_token] = @session.id
       render json: {
         success: true,
-        message: "注册成功! 即将跳转到首页..",
+        message: t('messages.success.user.signup'),
         redirect_url: root_path
       }
     else
       render json: {
         success: false,
+        message: t('messages.error.user.signup'),
         errors: @user.errors.full_messages
       }, status: :unprocessable_entity
     end

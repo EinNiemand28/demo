@@ -4,3 +4,7 @@
 import * as bootstrap from "bootstrap"
 
 window.bootstrap = bootstrap
+
+import { showToast } from "./toast_helper"
+
+window.showToast = showToast

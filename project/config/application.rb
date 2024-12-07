@@ -29,6 +29,10 @@ module Project
     config.autoload_lib(ignore: %w[assets tasks])
     
     config.action_view.field_error_proc = Proc.new { |html_tag, instance| html_tag }
+    config.i18n.default_locale = :'zh-CN'
+    config.i18n.available_locales = [:'zh-CN']
+    config.time_zone = 'Asia/Shanghai'
+    config.active_record.default_timezone = :utc
 
     # Configuration for the application, engines, and railties goes here.
     #

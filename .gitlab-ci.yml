@@ -2,6 +2,7 @@ test-project:
   stage: test
   script:
     - cd project
+    - apt install -y libvips42 libvips-dev
     # - apt remove -y nodejs npm libnode-dev
     # - apt autoremove -y
     # - apt clean

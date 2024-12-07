@@ -17,19 +17,19 @@ class SessionsController < ApplicationController
         cookies.signed.permanent[:session_token] = @session.id
         render json: {
           success: true,
-          message: "登录成功! 即将跳转到首页..",
+          message: t('messages.success.user.login'),
           redirect_url: root_path
         }
       else
         render json: {
           success: false,
-          message: "密码错误"
+          message: t('messages.error.user.login'),
         }, status: :unprocessable_entity
       end
     else
       render json: {
         success: false,
-        message: "账号不存在"
+        message: t('messages.error.user.login')
       }, status: :unprocessable_entity
     end
   end
@@ -44,7 +44,7 @@ class SessionsController < ApplicationController
     end
     cookies.delete(:session_token)
     Current.reset
-    redirect_to root_path, notice: "Signed out successfully"
+    redirect_to root_path, notice: t('messages.success.user.logout')
   end
 
   private

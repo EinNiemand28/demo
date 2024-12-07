@@ -11,7 +11,12 @@ Rails.application.routes.draw do
     resource :email_verification, only: [:show, :create]
     resource :password_reset,     only: [:new, :edit, :create, :update]
   end
-  resources :users
+  resources :users, only: [:index, :show, :edit, :update, :destroy]
+  resources :users do
+    member do
+      patch :update_role
+    end
+  end
 
   resources :products
   resources :orders

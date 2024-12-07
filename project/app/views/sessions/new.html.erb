@@ -100,38 +100,26 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          const successDiv = document.createElement('div')
-          successDiv.className = 'alert alert-success alert-dismissible fade show position-fixed'
-          successDiv.style.cssText = `
-            z-index: 1050;
-            left: 50%;
-            top: 1rem;
-            transform: translateX(-50%);
-            min-width: 300px;
-            text-align: center;
-          `
-          successDiv.innerHTML = `
-            <div class="d-flex align-items-center">
-              <strong>${data.message}</strong>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          `
-          document.body.appendChild(successDiv)
-
-          setTimeout(() => {
-            window.location.href = data.redirect_url
-          }, 1000)
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url,
+            delay: 2000
+          })
         } else {
-          const errorDiv = document.createElement('div')
-          errorDiv.className = 'alert alert-danger alert-dismissible fade show'
-          errorDiv.innerHTML = `
-            <div class="d-flex align-items-center">
-              <strong>${data.message}</strong>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          `
-          form.parentNode.insertBefore(errorDiv, form)
+          showToast({
+            message: data.message,
+            type: 'danger',
+            delay: 3000
+          })
         }
+      })
+      .catch(error => {
+        showToast({
+          message: "登录失败, 请稍后重试",
+          type: 'error',
+          delay: 3000
+        })
       })
 
       form.classList.add('was-validated')

@@ -27,7 +27,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     }, as: :json
 
     assert_response :unprocessable_entity
-    assert_equal "密码错误", JSON.parse(response.body)["message"]
+    assert_equal "账号或密码错误", JSON.parse(response.body)["message"]
   end
 
   test "should not sign in with invalid login" do
@@ -37,7 +37,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     }, as: :json
 
     assert_response :unprocessable_entity
-    assert_equal "账号不存在", JSON.parse(response.body)["message"]
+    assert_equal "账号或密码错误", JSON.parse(response.body)["message"]
   end
 
   test "should sign out" do

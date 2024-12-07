@@ -53,3 +53,30 @@ body {
     background-color: #f8f9fa;
   }
 }
+
+.toast {
+  font-size: 1.1rem;  // 增加基础字体大小
+  
+  .toast-body {
+    padding: 1rem 1.5rem;  // 增加内边距
+    
+    h6 {
+      font-size: 1.2rem;  // 标题字体大小
+      margin-bottom: 0.5rem;
+    }
+    
+    ul {
+      font-size: 1rem;  // 列表项字体大小
+      padding-left: 1.2rem;
+      
+      li {
+        margin-bottom: 0.2rem;
+      }
+    }
+  }
+  
+  .btn-close {
+    font-size: 1.1rem;  // 关闭按钮大小
+    padding: 1rem;
+  }
+}

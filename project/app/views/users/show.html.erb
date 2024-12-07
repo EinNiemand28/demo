@@ -1,10 +1,66 @@
-<p style="color: green"><%= notice %></p>
+<div class="container mt-5">
+  <div class="row">
+    <!-- 左侧个人信息卡片 -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <%= image_tag @user.avatar.present? ? @user.avatar : "default_avatar.png", 
+                class: "rounded-circle", style: "width: 150px; height: 150px; object-fit: cover;" %>
+          </div>
+          <h5 class="card-title mb-2"><%= @user.username %></h5>
+          <p class="text-muted mid mb-3">
+            <span class="badge bg-<%= @user.admin? ? 'danger' : (@user.worker? ? 'warning' : 'info') %>">
+              <%= t("roles.#{@user.role}") %>
+            </span>
+          </p>
+          <% if Current&.user == @user %>
+            <div class="btn-group" role="group">
+              <%= link_to edit_user_path(@user), class: "btn btn-outline-primary btn-sm" do %>
+                <i class="bi bi-pencil-square me-1"></i>编辑资料
+              <% end %>
+              <%= link_to edit_password_path(@user), class: "btn btn-outline-secondary btn-sm" do %>
+                <i class="bi bi-key me-1"></i>修改密码
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
 
-<%= render @user %>
+    <!-- 右侧详细信息 -->
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-4">个人信息</h5>
+          
+          <div class="row mb-3">
+            <div class="col-sm-3 text-muted">用户名</div>
+            <div class="col-sm-9"><%= @user.username %></div>
+          </div>
 
-<div>
-  <%= link_to "Edit this user", edit_user_path(@user) %> |
-  <%= link_to "Back to users", users_path %>
+          <div class="row mb-3">
+            <div class="col-sm-3 text-muted">邮箱</div>
+            <div class="col-sm-9">
+              <%= @user.email.presence %>
+            </div>
+          </div>
 
-  <%= button_to "Destroy this user", @user, method: :delete %>
+          <div class="row mb-3">
+            <div class="col-sm-3 text-muted">手机号码</div>
+            <div class="col-sm-9">
+              <%= @user.phone.presence %>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-sm-3 text-muted">注册时间</div>
+            <div class="col-sm-9">
+              <%= l @user.created_at, format: :long %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

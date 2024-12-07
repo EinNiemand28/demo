@@ -175,44 +175,29 @@
         },
         body: JSON.stringify({ user: userData })
       })
-      .then(response => {
-        return response.json()
-      })
+      .then(response =>  response.json())
       .then(data => {
         if (data.success) {
-          const successDiv = document.createElement('div')
-          successDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3'
-          successDiv.style.cssText = `
-            z-index: 1050;
-            left: 50%;
-            top: 1rem;
-            transform: translateX(-50%);
-            min-width: 300px;
-            text-align: center;
-          `
-          successDiv.innerHTML = `
-            <div class="d-flex align-items-center">
-              <strong>${data.message}</strong>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          `
-          document.body.appendChild(successDiv)
-
-          setTimeout(() => {
-            window.location.href = data.redirect_url
-          }, 2000)
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url
+          })
         } else {
-          const errorDiv = document.createElement('div')
-          errorDiv.className = 'alert alert-danger alert-dismissible fade show'
-          errorDiv.innerHTML = `
-            <h5 class="alert-heading">注册信息有误</h5>
-            <ul class="mb-0">
-              ${data.errors.map(error => `<li>${error}</li>`).join('')}
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          `
-          form.parentNode.insertBefore(errorDiv, form)
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
         }
+      })
+      .catch(error => {
+        showToast({
+          message: "注册失败, 请稍后重试",
+          type: 'error',
+          delay: 3000
+        })
       })
 
       form.classList.add('was-validated')
