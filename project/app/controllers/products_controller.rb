@@ -1,5 +1,5 @@
 class ProductsController < ApplicationController
-  before_action :authenticate
+  before_action :authenticate, except: [:index]
   before_action :set_product, only: [:show, :edit, :update, :destroy]
   before_action :require_admin_or_woker, except: [:index, :show]
 

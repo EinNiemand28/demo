@@ -110,6 +110,9 @@ zh-CN:
         create: "商品添加成功"
         update: "商品数量更新成功"
         delete: "商品删除成功"
+      favorite:
+        create: "收藏成功"
+        delete: "取消收藏成功"
     error:
       unauthorized: "您没有权限执行此操作"
       user:
@@ -132,3 +135,6 @@ zh-CN:
         create: "商品添加失败"
         update: "商品数量更新失败"
         delete: "商品删除失败"
+      favorite:
+        create: "收藏失败"
+        delete: "取消收藏失败"

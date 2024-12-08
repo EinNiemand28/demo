@@ -1,8 +1,4 @@
 Rails.application.routes.draw do
-  get "cart_items/create"
-  get "cart_items/update"
-  get "cart_items/destroy"
-  get "carts/show"
   get  "sign_in", to: "sessions#new"
   post "sign_in", to: "sessions#create"
   get  "sign_up", to: "registrations#new"
@@ -20,10 +16,13 @@ Rails.application.routes.draw do
     member do
       patch :update_role
     end
-    resource :cart, only: [:show] do
-      resources :cart_items, only: [:create, :update, :destroy]
-    end
   end
+
+  resource :cart, only: [:show] do
+    resources :cart_items, only: [:create, :update, :destroy]
+  end
+
+  resources :favorites, only: [:index, :create, :destroy]
 
   resources :categories
   resources :products

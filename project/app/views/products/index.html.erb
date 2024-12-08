@@ -25,59 +25,66 @@
                 <% end %>
               </div>
             </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                  <h5 class="card-title fs-4 fw-bold mb-0 text-primary">
-                    <%= product.name %>
-                  </h5>
-                  <span class="badge bg-light text-secondary border">
-                    <i class="bi bi-diagram-2 me-1"></i>
-                    <%= product.category.full_path %>
-                  </span>
-                </div>
-                <p class="card-text text-muted lh-base mb-3" style="min-height: 3rem;">
-                  <%= truncate(product.description, length: 50) %>
-                </p>
-                <p class="card-text mb-2">
-                  <span class="badge bg-danger px-3 py-2 fs-6">
-                    ¥<%= number_with_precision(product.price, precision: 2) %>
-                  </span>
-                  <span class="badge bg-light text-dark border">
-                    <i class="bi bi-box-seam me-1"></i>库存: <%= product.stock %>
-                  </span>
-                </p>
-              </div>
-              <div class="card-footer d-flex justify-content-end gap-2">
-                <% if Current.user&.admin? || Current.user&.worker? %>
-                  <div class="btn-group me-auto">
-                    <%= link_to edit_product_path(product), class: "btn btn-outline-primary" do %>
-                      <i class="bi bi-pencil"></i> 编辑
-                    <% end %>
-                    <%= button_to product_path(product), 
-                          method: :delete,
-                          class: "btn btn-outline-danger",
-                          form: { class: 'd-inline-block' },
-                          data: { action: "delete-product",
-                                product_id: product.id } do %>
-                      <i class="bi bi-trash"></i> 删除
-                    <% end %>
+            <div class="col-md-8 h-100">
+              <div class="d-flex flex-column h-100">
+                <div class="card-body flex-grow-1">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="card-title fs-4 fw-bold mb-0 text-primary">
+                      <%= product.name %>
+                    </h5>
+                    <span class="badge bg-light text-secondary border">
+                      <i class="bi bi-diagram-2 me-1"></i>
+                      <%= product.category.full_path %>
+                    </span>
                   </div>
-                <% end %>
+                  <p class="card-text text-muted lh-base mb-3" style="min-height: 3rem;">
+                    <%= truncate(product.description, length: 50) %>
+                  </p>
+                  <p class="card-text mb-2">
+                    <span class="badge bg-danger px-3 py-2 fs-6">
+                      ¥<%= number_with_precision(product.price, precision: 2) %>
+                    </span>
+                    <span class="badge bg-light text-dark border">
+                      <i class="bi bi-box-seam me-1"></i>库存: <%= product.stock %>
+                    </span>
+                  </p>
+                </div>
+                <div class="card-footer">
+                  <div class="d-flex justify-content-end">
+                    <div class="btn-group me-auto">
+                      <%= link_to product_path(product), class: "btn btn-outline-success" do %>
+                        <i class="bi bi-info-circle me-1"></i>详情
+                      <% end %>
+                    </div>
 
-                <div class="btn-group">
-                  <%= link_to product_path(product), class: "btn btn-outline-success" do %>
-                    <i class="bi bi-info-circle me-1"></i>详情
-                  <% end %>
-                  
-                  <% if Current.user %>
-                    <button type="button" 
-                            class="btn btn-outline-primary"
-                            data-action="add-to-cart"
-                            data-product-id="<%= product.id %>">
-                      <i class="bi bi-cart-plus me-1"></i>加入购物车
-                    </button>
-                  <% end %>
+                    <div class="btn-group">
+                      <% if Current.user %>
+                        <% if Current.user.favorite_products.include?(product) %>
+                          <%= button_to favorite_path(Current.user.favorites.find_by(product: product)), 
+                                method: :delete,
+                                class: "btn btn-outline-danger",
+                                form: { class: 'd-inline-block' },
+                                data: { action: "remove-favorite" } do %>
+                            <i class="bi bi-heart-fill me-1"></i>取消收藏
+                          <% end %>
+                        <% else %>
+                          <%= button_to favorites_path(product_id: product.id), 
+                                method: :post,
+                                class: "btn btn-outline-danger",
+                                form: { class: 'd-inline-block' },
+                                data: { action: "add-favorite" } do %>
+                            <i class="bi bi-heart me-1"></i>收藏
+                          <% end %>
+                        <% end %>
+                      <% end %>
+                      <button type="button" 
+                              class="btn btn-outline-primary"
+                              data-action="add-to-cart"
+                              data-product-id="<%= product.id %>">
+                        <i class="bi bi-cart-plus me-1"></i>加入购物车
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -94,9 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-action="add-to-cart"]').forEach(button => {
     button.addEventListener('click', (e) => {
       const productId = e.target.closest('[data-action="add-to-cart"]').dataset.productId
-      const userId = <%= Current&.user.id %>
+      const userId = '<%= Current.user&.id %>'
+      if (!userId) {
+        window.location.href = '/sign_in'
+        return
+      }
       
-      fetch(`/users/${userId}/cart/cart_items`, {
+      fetch(`/cart/cart_items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,6 +134,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(error => {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      })
+    })
+  })
+
+  document.querySelectorAll('[data-action="add-favorite"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const form = e.target.closest('form')
+      e.preventDefault()
+      
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: new FormData(form)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 500
+          })
+          setTimeout(() => {
+            window.location.reload()
+          }, 500)
+        } else {
+          showToast({
+            message: data.message || '收藏失败',
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(() => {
         showToast({
           message: '系统错误，请稍后重试',
           type: 'danger',

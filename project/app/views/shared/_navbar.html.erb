@@ -1,6 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-3">
   <div class="container">
-    <%# 品牌和折叠按钮 %>
     <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
       <i class="bi bi-shop me-2 fs-4"></i>
       <span class="fw-bold text-primary fs-4">MyShop</span>
@@ -11,7 +10,6 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarContent">
-      <%# 左侧导航项，增加字体大小 %>
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
           <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if current_page?(root_path)}" do %>
@@ -24,12 +22,15 @@
           <% end %>
         </li>
         
-        <%# 需要登录才显示的项目 %>
-        <%# TODO!!!! %>
         <% if Current.user %>
           <li class="nav-item">
-            <%= link_to user_cart_path(Current.user), class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
+            <%= link_to cart_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
               <i class="bi bi-cart me-1"></i>购物车
+            <% end %>
+          </li>
+          <li class="nav-item">
+            <%= link_to favorites_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'favorites'}" do %>
+              <i class="bi bi-heart me-1"></i>收藏夹
             <% end %>
           </li>
           <li class="nav-item">
@@ -47,7 +48,6 @@
             </li>
           <% end %>
           
-          <%# 管理员可见的项目 %>
           <% if Current.user.admin? %>
             <li class="nav-item">
               <%= link_to users_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'users'}" do %>
@@ -58,10 +58,8 @@
         <% end %>
       </ul>
 
-      <%# 右侧用户区域 %>
       <ul class="navbar-nav align-items-center">
         <% if Current.user %>
-          <!-- 登录后的下拉菜单，增加字体大小 -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center fs-5" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
               <i class="bi bi-person-circle me-1"></i>

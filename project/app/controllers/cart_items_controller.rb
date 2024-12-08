@@ -17,7 +17,7 @@ class CartItemsController < ApplicationController
       render json: {
         success: true,
         message: t('messages.success.cart_item.create'),
-        redirect_url: user_cart_path
+        redirect_url: cart_path
       }
     else
       render json: {
@@ -33,7 +33,7 @@ class CartItemsController < ApplicationController
       render json: {
         success: true,
         message: t('messages.success.cart_item.update'),
-        redirect_url: user_cart_path
+        redirect_url: cart_path
       }
     else
       render json: {

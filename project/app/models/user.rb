@@ -51,6 +51,9 @@ class User < ApplicationRecord
 
   has_one :cart, dependent: :destroy
 
+  has_many :favorites, dependent: :destroy
+  has_many :favorite_products, through: :favorites, source: :product
+
   # before_validation if: :email_changed?, on: :update do
   #   self.verified = false
   # end
