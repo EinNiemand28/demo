@@ -1,0 +1,180 @@
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="card-title mb-0">
+      <i class="bi bi-grid me-2"></i>所有商品
+    </h4>
+    
+    <% if Current.user&.admin? || Current.user&.worker? %>
+      <%= link_to new_product_path, class: "btn btn-primary" do %>
+        <i class="bi bi-plus-lg me-1"></i>新建商品
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    <% @products.each do |product| %>
+      <div class="col">
+        <div class="card h-100 shadow-sm rounded-3">
+          <div class="row g-0 h-100">
+            <div class="col-md-4 h-100">
+              <div class="position-relative h-100">
+                <% if product.image.attached? %>
+                  <%= image_tag product.image_variant(:medium), class: "img-fluid rounded-start", style: "height: 100%; object-fit: cover;" %>
+                <% else %>
+                  <%= image_tag "default_product.png", class: "img-fluid rounded-start", style: "height: 100%; object-fit: cover;" %>
+                <% end %>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="card-title fs-4 fw-bold mb-0 text-primary">
+                    <%= product.name %>
+                  </h5>
+                  <span class="badge bg-light text-secondary border">
+                    <i class="bi bi-diagram-2 me-1"></i>
+                    <%= product.category.full_path %>
+                  </span>
+                </div>
+                <p class="card-text text-muted lh-base mb-3" style="min-height: 3rem;">
+                  <%= truncate(product.description, length: 50) %>
+                </p>
+                <p class="card-text mb-2">
+                  <span class="badge bg-danger px-3 py-2 fs-6">
+                    ¥<%= number_with_precision(product.price, precision: 2) %>
+                  </span>
+                  <span class="badge bg-light text-dark border">
+                    <i class="bi bi-box-seam me-1"></i>库存: <%= product.stock %>
+                  </span>
+                </p>
+              </div>
+              <div class="card-footer d-flex justify-content-end gap-2">
+                <% if Current.user&.admin? || Current.user&.worker? %>
+                  <div class="btn-group me-auto">
+                    <%= link_to edit_product_path(product), class: "btn btn-outline-primary" do %>
+                      <i class="bi bi-pencil"></i> 编辑
+                    <% end %>
+                    <%= button_to product_path(product), 
+                          method: :delete,
+                          class: "btn btn-outline-danger",
+                          form: { class: 'd-inline-block' },
+                          data: { action: "delete-product",
+                                product_id: product.id } do %>
+                      <i class="bi bi-trash"></i> 删除
+                    <% end %>
+                  </div>
+                <% end %>
+
+                <div class="btn-group">
+                  <%= link_to product_path(product), class: "btn btn-outline-success" do %>
+                    <i class="bi bi-info-circle me-1"></i>详情
+                  <% end %>
+                  
+                  <% if Current.user %>
+                    <button type="button" 
+                            class="btn btn-outline-primary"
+                            data-action="add-to-cart"
+                            data-product-id="<%= product.id %>">
+                      <i class="bi bi-cart-plus me-1"></i>加入购物车
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-action="add-to-cart"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const productId = e.target.closest('[data-action="add-to-cart"]').dataset.productId
+      const userId = <%= Current&.user.id %>
+      
+      fetch(`/users/${userId}/cart/cart_items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ product_id: productId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1000
+          })
+        } else {
+          showToast({
+            message: data.message || '添加失败',
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(error => {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      })
+    })
+  })
+
+  document.querySelectorAll('[data-action="delete-product"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要删除此商品吗？')) {
+        fetch(form.action, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.href = data.redirect_url
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message || '删除失败',
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误，请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+})
+</script>
+<% end %>

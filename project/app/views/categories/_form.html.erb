@@ -1,0 +1,120 @@
+<%= form_with(model: category, data: { turbo: false }, class: "needs-validation") do |form| %>
+  <div class="form-floating mb-3">
+    <%= form.text_field :name, 
+          class: "form-control",
+          required: true,
+          placeholder: "分类名称" %>
+    <%= form.label :name do %>
+      <i class="bi bi-tag me-1"></i>分类名称
+    <% end %>
+  </div>
+
+  <div class="form-floating mb-3">
+    <%= form.text_area :description, 
+          class: "form-control",
+          style: "height: 100px",
+          placeholder: "分类描述" %>
+    <%= form.label :description do %>
+      <i class="bi bi-text-paragraph me-1"></i>分类描述
+    <% end %>
+  </div>
+
+  <div class="form-floating mb-4">
+  <%= form.select :parent_id,
+        options_from_collection_for_select(
+          Category.available_parents_for(category),
+          'id', 
+          'full_name',
+          category.parent_id
+        ),
+        { 
+          include_blank: '无 (作为根分类)', 
+          prompt: "请选择父分类"  # 添加提示文本
+        },
+        { 
+          class: "form-select",
+          data: { 
+            current_name: category.name
+          }
+        } %>
+    <%= form.label :parent_id do %>
+      <i class="bi bi-diagram-2 me-1"></i>父分类
+    <% end %>
+    <div class="form-text">
+      <i class="bi bi-info-circle me-1"></i>
+      选择父分类后，将在其下创建子分类
+    </div>
+  </div>
+
+  <div class="text-end">
+    <%= link_to "取消", categories_path, class: "btn btn-light me-2" %>
+    <%= form.submit class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  
+  const form = document.querySelector('form.needs-validation')
+  
+  if (form) {
+    form.onsubmit = async (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      
+      try {
+        const formData = new FormData(form)
+        const categoryData = {}
+        formData.forEach((value, key) => {
+          const match = key.match(/category\[(.*?)\]/)
+          if (match) {
+            categoryData[match[1]] = value
+          }
+        })
+
+        const methodInput = form.querySelector('input[name="_method"]')
+        const method = methodInput ? methodInput.value.toUpperCase() : 'POST'
+
+        const response = await fetch(form.action, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ category: categoryData })
+        })
+        
+        const data = await response.json()
+        
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url,
+            delay: 1500
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      } catch (error) {
+        console.log(error)
+        showToast({
+          message: '系统错误, 请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      }
+      
+      return false
+    }
+  }
+})
+</script>
+<% end %>

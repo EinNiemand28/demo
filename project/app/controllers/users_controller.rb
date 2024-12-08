@@ -1,7 +1,8 @@
 class UsersController < ApplicationController
   before_action :authenticate
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :update_role]
-  before_action :authorize, only: [:edit, :update, :destroy]
+  before_action :set_user, except: [:index]
+  before_action :require_admin, except: [:show, :edit, :update]
+  before_action :authorize, only: [:show, :edit, :update]
 
   def index
     @users = User.all
@@ -42,12 +43,19 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    @user.destroy
-    render json: {
-      success: true,
-      message: t('messages.success.user.delete'),
-      redirect_url: users_path
-    }
+    if Current.user == @user
+      render json: {
+        success: false,
+        message: t('messages.error.user.delete')
+      }, status: :unprocessable_entity
+    else
+      @user.destroy
+      render json: {
+        success: true,
+        message: t('messages.success.user.delete'),
+        redirect_url: users_path
+      }
+    end
   end
 
   def update_role
@@ -74,6 +82,22 @@ class UsersController < ApplicationController
   end
 
   private
+  def require_admin
+    unless Current.user&.admin?
+      respond_to do |format|
+        format.html {
+          redirect_to root_path, alert: t('messages.error.unauthorized')
+        }
+        format.json {
+          render json: {
+            success: false,
+            message: t('messages.error.unauthorized')
+          }, status: :unauthorized
+        }
+      end
+    end
+  end
+
   def authorize
     unless Current.user == @user || Current.user.admin?
       respond_to do |format|

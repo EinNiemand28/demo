@@ -1,0 +1,130 @@
+<%= form_with(model: product, data: { turbo: false }, class: "needs-validation", multipart: true) do |form| %>
+  <div class="form-floating mb-3">
+    <%= form.text_field :name, 
+          class: "form-control",
+          required: true,
+          placeholder: "商品名称" %>
+    <%= form.label :name do %>
+      <i class="bi bi-tag me-1"></i>商品名称
+    <% end %>
+  </div>
+
+  <div class="form-floating mb-3">
+    <%= form.text_area :description, 
+          class: "form-control",
+          style: "height: 100px",
+          placeholder: "商品描述" %>
+    <%= form.label :description do %>
+      <i class="bi bi-text-paragraph me-1"></i>商品描述
+    <% end %>
+  </div>
+
+  <div class="form-floating mb-3">
+    <%= form.number_field :price, 
+          class: "form-control",
+          required: true,
+          step: 0.01,
+          placeholder: "价格" %>
+    <%= form.label :price do %>
+      <i class="bi bi-currency-dollar me-1"></i>价格
+    <% end %>
+  </div>
+
+  <div class="form-floating mb-3">
+    <%= form.number_field :stock, 
+          class: "form-control",
+          required: true,
+          placeholder: "库存量" %>
+    <%= form.label :stock do %>
+      <i class="bi bi-box-seam me-1"></i>库存量
+    <% end %>
+  </div>
+
+  <div class="form-floating mb-4">
+    <%= form.select :category_id,
+          options_from_collection_for_select(
+            @categories, 
+            'id', 
+            'full_path',
+            product.category_id
+          ),
+          { include_blank: '请选择分类' },
+          { class: "form-select" } %>
+    <%= form.label :category_id do %>
+      <i class="bi bi-diagram-2 me-1"></i>分类
+    <% end %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :image, class: "form-label" do %>
+      <i class="bi bi-image me-1"></i>商品图片
+    <% end %>
+    <%= form.file_field :image, 
+          class: "form-control",
+          accept: "image/jpeg,image/png" %>
+    <div class="form-text">
+      支持 JPEG、PNG 格式，文件大小不超过 5MB
+    </div>
+  </div>
+
+  <div class="text-end">
+    <%= link_to "取消", products_path, class: "btn btn-light me-2" %>
+    <%= form.submit class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form.needs-validation')
+
+  if (form) {
+    form.onsubmit = async (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      try {
+        const formData = new FormData(form)
+
+        const methodInput = form.querySelector('input[name="_method"]')
+        const method = methodInput ? methodInput.value.toUpperCase() : 'POST'
+
+        const response = await fetch(form.action, {
+          method: method,
+          headers: {
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: formData
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url,
+            delay: 1500
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      } catch (error) {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      }
+
+      return false
+    }
+  }
+})
+</script>
+<% end %>

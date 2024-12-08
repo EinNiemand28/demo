@@ -7,6 +7,17 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+user = User.create!(
+  username: "root",
+  email: "1@1",
+  password: "123123",
+  password_confirmation: '123123',
+  role: :admin
+)
+
+puts "Seeded 1 admin"
+
 20.times do |i|
   user = User.create!(
     username: "user#{i+1}",
@@ -14,7 +25,7 @@
     phone: "1380110#{sprintf('%04d', i+1)}",
     password: '123123',
     password_confirmation: '123123',
-    role: [:buyer, :worker].sample
+    role: [:buyer, :buyer, :worker].sample
   )
 end
 

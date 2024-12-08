@@ -19,8 +19,8 @@
           <% end %>
         </li>
         <li class="nav-item">
-          <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'products'}" do %>
-            <i class="bi bi-grid me-1"></i>商品
+          <%= link_to products_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'products'}" do %>
+            <i class="bi bi-grid me-1"></i>所有商品
           <% end %>
         </li>
         
@@ -28,15 +28,24 @@
         <%# TODO!!!! %>
         <% if Current.user %>
           <li class="nav-item">
-            <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
+            <%= link_to user_cart_path(Current.user), class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
               <i class="bi bi-cart me-1"></i>购物车
             <% end %>
           </li>
           <li class="nav-item">
             <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'orders'}" do %>
-              <i class="bi bi-receipt me-1"></i>订单
+              <i class="bi bi-receipt me-1"></i>我的订单
             <% end %>
           </li>
+          
+
+          <% if Current.user.admin? || Current.user.worker? %>
+            <li class="nav-item">
+              <%= link_to categories_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'categories'}" do %>
+                <i class="bi bi-tags me-1"></i>分类管理
+              <% end %>
+            </li>
+          <% end %>
           
           <%# 管理员可见的项目 %>
           <% if Current.user.admin? %>

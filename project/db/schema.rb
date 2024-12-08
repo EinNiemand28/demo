@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_06_141450) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_07_162222) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -39,6 +39,46 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_06_141450) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "cart_items", force: :cascade do |t|
+    t.integer "cart_id", null: false
+    t.integer "product_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cart_id", "product_id"], name: "index_cart_items_on_cart_id_and_product_id", unique: true
+    t.index ["cart_id"], name: "index_cart_items_on_cart_id"
+    t.index ["product_id"], name: "index_cart_items_on_product_id"
+  end
+
+  create_table "carts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_carts_on_user_id"
+  end
+
+  create_table "categories", force: :cascade do |t|
+    t.string "name", limit: 20, null: false
+    t.text "description"
+    t.integer "parent_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_categories_on_name"
+    t.index ["parent_id"], name: "index_categories_on_parent_id"
+  end
+
+  create_table "products", force: :cascade do |t|
+    t.string "name", limit: 50, null: false
+    t.text "description"
+    t.decimal "price", precision: 10, scale: 2, default: "0.0", null: false
+    t.integer "stock", default: 0, null: false
+    t.integer "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_products_on_category_id"
+    t.index ["name"], name: "index_products_on_name"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "user_agent"
@@ -52,7 +92,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_06_141450) do
     t.string "username", limit: 50, null: false
     t.string "email", limit: 100
     t.string "phone", limit: 25
-    t.string "avatar", default: "default_avatar.png"
     t.integer "role", default: 0
     t.string "password_digest", null: false
     t.boolean "verified", default: false, null: false
@@ -65,5 +104,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_06_141450) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "cart_items", "carts"
+  add_foreign_key "cart_items", "products"
+  add_foreign_key "carts", "users"
+  add_foreign_key "products", "categories"
   add_foreign_key "sessions", "users"
 end

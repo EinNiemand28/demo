@@ -1,0 +1,140 @@
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <!-- 标题和操作按钮 -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-tags me-2"></i>分类管理
+        </h4>
+        
+        <% if Current.user&.admin? || Current.user&.worker? %>
+          <%= link_to new_category_path, class: "btn btn-primary" do %>
+            <i class="bi bi-plus-lg me-1"></i>新建分类
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- 分类列表 -->
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>分类名称</th>
+              <th>描述</th>
+              <th>父分类</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @categories.each do |category| %>
+              <tr>
+                <td>
+                  <div class="fw-medium">
+                    <%= category.name %>
+                    <small class="text-muted ms-2">#<%= category.id %></small>
+                  </div>
+                  <% if category.parent %>
+                    <small class="text-muted">
+                      <i class="bi bi-diagram-2 me-1"></i>
+                      <%= category.full_path %>
+                    </small>
+                  <% else %>
+                    <span class="badge bg-secondary">根分类</span>
+                  <% end %>
+                </td>
+                <td><%= category.description %></td>
+                <td>
+                  <% if category.parent %>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-arrow-return-right me-2 text-muted"></i>
+                      <%= category.parent.name %>
+                      <small class="text-muted ms-2">#<%= category.parent.id %></small>
+                    </div>
+                  <% else %>
+                    <span class="text-muted">-</span>
+                  <% end %>
+                </td>
+                <td><%= l category.created_at, format: :short %></td>
+                <td>
+                  <div class="btn-group">
+                    <%= link_to edit_category_path(category), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                    <%= button_to category_path(category), 
+                          method: :delete,
+                          class: "btn btn-sm btn-outline-danger",
+                          form: { class: 'd-inline-block' },
+                          data: { action: "delete-category",
+                                 category_id: category.id } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const button = document.querySelector('[data-action="delete-category"]')
+
+  if (button) {
+    button.onclick = async (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      const form = event.target.closest('form')
+
+      if (confirm('确定要删除吗？')) {
+        try {
+          const response = await fetch(form.action, {
+            method: form.method,
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': Rails.csrfToken()
+            },
+            body: JSON.stringify({
+              category_id: button.dataset.categoryId
+            })
+          })
+
+          const data = await response.json()
+
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              redirect: data.redirect_url,
+              delay: 1500
+            })
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        } catch (error) {
+          showToast({
+            message: '系统错误, 请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        }
+      }
+
+      return false
+    }
+  }
+})
+</script>
+<% end %>

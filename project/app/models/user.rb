@@ -49,6 +49,8 @@ class User < ApplicationRecord
 
   validate :acceptable_avatar
 
+  has_one :cart, dependent: :destroy
+
   # before_validation if: :email_changed?, on: :update do
   #   self.verified = false
   # end
