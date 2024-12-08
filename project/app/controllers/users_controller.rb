@@ -27,7 +27,12 @@ class UsersController < ApplicationController
   end
 
   def update
-    if @user.update(user_params)
+    if @user.admin?
+      render json: {
+        success: false,
+        message: t('messages.error.unauthorized'),
+      }, status: :unauthorized
+    elsif @user.update(user_params)
       render json: {
         success: true,
         message: t('messages.success.user.update'),
@@ -99,7 +104,7 @@ class UsersController < ApplicationController
   end
 
   def authorize
-    unless Current.user == @user || Current.user.admin?
+    unless (Current.user == @user || Current.user.admin?)
       respond_to do |format|
         format.json {
           render json: {
