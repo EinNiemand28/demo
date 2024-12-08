@@ -2,7 +2,7 @@ test-project:
   stage: test
   script:
     - cd project
-    - apt install -y libvips42 libvips-dev
+    # - apt install -y libvips42 libvips-dev
     # - apt remove -y nodejs npm libnode-dev
     # - apt autoremove -y
     # - apt clean
@@ -22,7 +22,7 @@ test-project:
 deploy-project:
   stage: deploy
   script:
-    - rsync -arv --delete --exclude="*.sqlite3" --exclude="node_modules" ./project /
+    - rsync -arv --delete --exclude="node_modules" ./project /
     - cd /project
     - bundle install
     - yarn install
