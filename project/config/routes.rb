@@ -18,6 +18,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :addresses, only: [:create, :update, :destroy]
+
   resource :cart, only: [:show] do
     resources :cart_items, only: [:create, :update, :destroy]
   end

@@ -1,0 +1,46 @@
+<%= form_with(model: address, data: { turbo: false }, class: "needs-validation") do |f| %>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= f.text_field :name, class: "form-control", required: true, placeholder: "收货人姓名" %>
+        <%= f.label :name do %>
+          <i class="bi bi-person me-1"></i>收货人姓名
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= f.text_field :phone, class: "form-control", required: true, placeholder: "手机号码" %>
+        <%= f.label :phone do %>
+          <i class="bi bi-phone me-1"></i>手机号码
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-md-12">
+      <div class="form-floating">
+        <%= f.text_field :postcode, class: "form-control", required: true, placeholder: "邮政编码" %>
+        <%= f.label :postcode do %>
+          <i class="bi bi-envelope me-1"></i>邮政编码
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="form-floating">
+        <%= f.text_area :content, class: "form-control", style: "height: 100px", required: true, placeholder: "详细地址" %>
+        <%= f.label :content do %>
+          <i class="bi bi-geo-alt me-1"></i>详细地址
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="form-check">
+        <%= f.check_box :is_default, class: "form-check-input" %>
+        <%= f.label :is_default, "设为默认地址", class: "form-check-label" %>
+      </div>
+    </div>
+  </div>
+<% end %>
