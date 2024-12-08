@@ -18,5 +18,5 @@ two:
   email: user2@example.com
   phone: '13800138002'
   password_digest: <%= BCrypt::Password.create('password123') %>
-  role: 2
+  role: 1
   verified: true

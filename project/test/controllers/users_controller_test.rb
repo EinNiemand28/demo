@@ -4,6 +4,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:one)
     @user.update!(password: 'password123', password_confirmation: 'password123')
+
+    @user2 = users(:two)
     
     # puts "Before sign in"
     sign_in_as(@user)
@@ -33,7 +35,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update user" do
-    patch user_path(@user), params: { 
+    patch user_path(@user2), params: { 
       user: { 
         username: "updated_name",
         email: "updated@example.com" 
@@ -44,7 +46,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     json = JSON.parse(response.body)
     assert json['success']
     assert_equal "个人资料已更新", json['message']
-    assert_equal user_path(@user), json['redirect_url']
+    assert_equal user_path(@user2), json['redirect_url']
   end
 
   # test "should destroy user" do
