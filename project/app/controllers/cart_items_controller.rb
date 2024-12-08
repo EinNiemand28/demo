@@ -2,7 +2,7 @@ class CartItemsController < ApplicationController
   before_action :authenticate
   before_action :set_cart
   before_action :set_cart_item, only: [:update, :destroy]
-  before_action :authorize
+  before_action :require_buyer
 
   def create
     @product = Product.find(params[:product_id])
@@ -63,8 +63,8 @@ class CartItemsController < ApplicationController
     @cart = Current.user.cart || Current.user.create_cart
   end
 
-  def authorize
-    if @cart.user != Current.user
+  def require_buyer
+    unless Current.user.buyer? && Current.user == @cart.user
       respond_to do |format|
         format.html {
           redirect_to root_path, alert: t('messages.error.unauthorized')

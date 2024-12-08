@@ -186,6 +186,48 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
+  document.querySelectorAll('[data-action="remove-favorite"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const form = e.target.closest('form')
+      e.preventDefault()
+      
+      fetch(form.action, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 500
+          })
+          setTimeout(() => {
+            window.location.reload()
+          }, 500)
+        } else {
+          showToast({
+            message: data.message || '取消收藏失败',
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(() => {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      })
+    })
+  })
+
   document.querySelectorAll('[data-action="delete-product"]').forEach(button => {
     button.addEventListener('click', (e) => {
       e.preventDefault()

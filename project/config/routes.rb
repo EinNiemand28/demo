@@ -28,7 +28,11 @@ Rails.application.routes.draw do
 
   resources :categories
   resources :products
-  resources :orders
+  resources :orders, only: [:index, :show, :create, :destroy] do
+    member do
+      patch :update_status
+    end
+  end
 
   get "home/index"
   root "home#index"

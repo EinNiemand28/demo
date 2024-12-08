@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <% if Current.user == @user %>
+    <% if Current.user == @user && Current.user.buyer? %>
       <div class="card shadow-sm mt-4">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -123,7 +123,7 @@
       </div>
 
       <div class="modal fade" id="newAddressModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">新增收货地址</h5>
@@ -141,7 +141,7 @@
       </div>
 
       <div class="modal fade" id="editAddressModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">编辑收货地址</h5>
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const formContainer = document.querySelector('#edit-address-form-container')
       const form = document.querySelector('#newAddressModal form').cloneNode(true)
       
-      const name = addressCard.querySelector('h6').childNodes[0].textContent.trim()
+      const name = addressCard.querySelector('span.text-primary').textContent.trim()
       const phone = addressCard.querySelector('span.text-muted').textContent.trim()
       const postcode = addressCard.querySelector('p.small').textContent.trim()
       const content = addressCard.querySelector('.col-md-6 p').textContent.trim()

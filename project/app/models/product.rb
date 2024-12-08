@@ -19,7 +19,7 @@ class Product < ApplicationRecord
     when :medium
       image.variant(resize_to_fill: [250, 250])
     else
-      image
+      image.variant(resize_to_fill: [400, 400])
     end
   end
 

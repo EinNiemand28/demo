@@ -1,25 +1,21 @@
-<%# app/views/users/index.html.erb %>
 <div class="container mt-5">
   <div class="card shadow-sm">
     <div class="card-body">
-      <!-- 标题和搜索栏 -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="card-title mb-0">
           <i class="bi bi-people me-2"></i>用户管理
         </h4>
         
         <div class="d-flex gap-2 align-items-center">
-          <!-- 添加过滤器按钮组 -->
           <div class="btn-group me-3" role="group">
             <%= link_to "全部", users_path, 
                   class: "btn btn-outline-secondary #{params[:role].blank? ? 'active' : ''}" %>
             <% User.roles.keys.each do |role| %>
               <%= link_to t("roles.#{role}"), users_path(role: role),
-                    class: "btn btn-outline-#{role == 'admin' ? 'danger' : (role == 'worker' ? 'warning' : 'info')} #{params[:role] == role ? 'active' : ''}" %>
+                    class: "btn btn-outline-#{role == 'admin' ? 'danger' : (role == 'worker' ? 'warning' : 'primary')} #{params[:role] == role ? 'active' : ''}" %>
             <% end %>
           </div>
 
-          <!-- 修改搜索表单 -->
           <%= form_with(url: users_path, method: :get, class: "d-flex") do |f| %>
             <%= f.hidden_field :role, value: params[:role] if params[:role].present? %>
             <div class="input-group input-group-lg shadow-sm">
@@ -36,7 +32,6 @@
         </div>
       </div>
 
-      <!-- 用户列表 -->
       <div class="table-responsive">
         <table class="table table-hover align-middle">
           <thead class="table-light">
@@ -68,7 +63,7 @@
                       <% User.roles.keys.each do |role| %>
                         <% unless role == 'admin' %>
                           <button type="button"
-                                  class="btn btn-sm <%= user.role == role ? 'btn-' : 'btn-outline-' %><%= role == 'worker' ? 'warning' : 'info' %>"
+                                  class="btn btn-sm <%= user.role == role ? 'btn-' : 'btn-outline-' %><%= role == 'worker' ? 'warning' : 'primary' %>"
                                   <%= 'disabled' if user.role == role %>
                                   data-action="change-role"
                                   data-role="<%= role %>"
@@ -79,7 +74,7 @@
                       <% end %>
                     </div>
                   <% else %>
-                    <span class="badge bg-<%= user.admin? ? 'danger' : (user.worker? ? 'warning' : 'info') %>">
+                    <span class="badge bg-<%= user.admin? ? 'danger' : (user.worker? ? 'warning' : 'primary') %>">
                       <%= t("roles.#{user.role}") %>
                     </span>
                   <% end %>
@@ -108,7 +103,6 @@
         </table>
       </div>
       
-      <!-- 分页 -->
       <% if @users.respond_to?(:total_pages) %>
         <div class="d-flex justify-content-center mt-4">
           <%= paginate @users %>

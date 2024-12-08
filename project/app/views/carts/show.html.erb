@@ -48,7 +48,7 @@
                       ¥<%= number_with_precision(item.product.price, precision: 2) %>
                     </span>
                   </td>
-                  <td style="width: 180px;">  <!-- 增加宽度 -->
+                  <td style="width: 180px;">
                     <div class="input-group">
                       <button class="btn btn-outline-secondary px-3" type="button" 
                               data-action="decrease-quantity"
@@ -97,7 +97,10 @@
               ¥<%= number_with_precision(@cart.total_price, precision: 2) %>
             </span>
           </div>
-          <button class="btn btn-danger btn-lg px-5">
+          <button type="button" 
+                  class="btn btn-danger btn-lg px-5"
+                  data-bs-toggle="modal" 
+                  data-bs-target="#checkoutModal">
             <i class="bi bi-wallet2 me-2"></i>去结算
           </button>
         </div>
@@ -111,6 +114,50 @@
           <% end %>
         </div>
       <% end %>
+
+      <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">选择收货地址</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <% if Current.user.addresses.any? %>
+                <% Current.user.addresses.each do |address| %>
+                  <div class="card mb-2">
+                    <div class="card-body">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" 
+                              name="address" value="<%= address.id %>"
+                              id="address_<%= address.id %>"
+                              <%= 'checked' if address.is_default %>>
+                        <label class="form-check-label" for="address_<%= address.id %>">
+                          <h6 class="mb-1"><%= address.name %> <span class="text-muted"><%= address.phone %></span></h6>
+                          <p class="mb-1 text-muted small"><%= address.postcode %></p>
+                          <p class="mb-0"><%= address.content %></p>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              <% else %>
+                <div class="text-center py-3">
+                  <p class="text-muted">您还没有添加收货地址</p>
+                  <%= link_to user_path(Current.user),
+                        class: "btn btn-primary" do %>
+                    <i class="bi bi-plus-lg me-1"></i>新增地址
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary" data-action="create-order">确认下单</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -118,7 +165,6 @@
 <% content_for :page_scripts do %>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // 更新数量的函数
   const updateQuantity = (itemId, quantity) => {
     fetch(`/cart/cart_items/${itemId}`, {
       method: 'PATCH',
@@ -151,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
 
-  // 数量增减按钮
   document.querySelectorAll('[data-action="decrease-quantity"]').forEach(button => {
     button.addEventListener('click', (e) => {
       const itemId = e.target.closest('[data-action="decrease-quantity"]').dataset.itemId
@@ -174,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
-  // 数量输入框变化
   document.querySelectorAll('[data-action="update-quantity"]').forEach(input => {
     input.addEventListener('change', (e) => {
       const itemId = e.target.dataset.itemId
@@ -185,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
-  // 删除按钮
   document.querySelectorAll('[data-action="remove-item"]').forEach(button => {
     button.addEventListener('click', (e) => {
       const itemId = e.target.closest('[data-action="remove-item"]').dataset.itemId
@@ -224,6 +267,37 @@ document.addEventListener('DOMContentLoaded', () => {
             type: 'danger',
             delay: 3000
           })
+        })
+      }
+    })
+  })
+
+  document.querySelector('[data-action="create-order"]')?.addEventListener('click', (e) => {
+    const addressId = document.querySelector('input[name="address"]:checked')?.value
+    fetch('/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ address_id: addressId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast({
+          message: data.message,
+          type: 'success',
+          delay: 1500,
+          redirect: data.redirect_url
+        })
+      } else {
+        showToast({
+          message: data.message,
+          type: 'danger',
+          errors: data.errors,
+          delay: 3000
         })
       }
     })

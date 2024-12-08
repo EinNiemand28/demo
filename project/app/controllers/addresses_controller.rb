@@ -1,5 +1,6 @@
 class AddressesController < ApplicationController
   before_action :authenticate
+  before_action :require_buyer
   before_action :set_address, only: [:update, :destroy]
 
   def create
@@ -51,6 +52,22 @@ class AddressesController < ApplicationController
   end
 
   private
+  def require_buyer
+    unless Current.user.buyer?
+      respond_to do |format|
+        format.html {
+          redirect_to root_path, alert: t('messages.error.unauthorized')
+        }
+        format.json {
+          render json: {
+            success: false,
+            message: t('messages.error.unauthorized')
+          }, status: :unauthorized
+        }
+      end
+    end
+  end
+
   def set_address
     @address = Current.user.addresses.find(params[:id])
   end

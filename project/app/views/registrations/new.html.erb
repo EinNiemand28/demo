@@ -97,7 +97,6 @@
 
   const forms = document.querySelectorAll('.needs-validation')
 
-  // 验证单个输入
   const checkInputValidity = (input, form) => {
     if (input.name === 'user[email]' || input.name === 'user[phone]') {
       const email = form.querySelector('input[name="user[email]"]')
@@ -152,7 +151,6 @@
       })
     })
 
-    // 表单提交验证
     form.addEventListener('submit', event => {
       event.preventDefault()
 

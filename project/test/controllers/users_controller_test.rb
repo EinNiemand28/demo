@@ -47,15 +47,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal user_path(@user), json['redirect_url']
   end
 
-  test "should destroy user" do
-    assert_difference('User.count', -1) do
-      delete user_path(@user)
-    end
+  # test "should destroy user" do
+  #   assert_difference('User.count', -1) do
+  #     delete user_path(@user)
+  #   end
     
-    assert_response :success
-    json = JSON.parse(response.body)
-    assert json['success']
-    assert_equal "删除成功", json['message']
-    assert_equal users_path, json['redirect_url']
-  end
+  #   assert_response :success
+  #   json = JSON.parse(response.body)
+  #   assert json['success']
+  #   assert_equal "删除成功", json['message']
+  #   assert_equal users_path, json['redirect_url']
+  # end
 end

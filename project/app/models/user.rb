@@ -56,6 +56,8 @@ class User < ApplicationRecord
 
   has_many :addresses, dependent: :destroy
 
+  has_many :orders, dependent: :destroy
+
   # before_validation if: :email_changed?, on: :update do
   #   self.verified = false
   # end

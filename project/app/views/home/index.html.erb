@@ -1,7 +1,7 @@
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col text-center">
-      <h1>欢迎来到我的商城</h1>
+    <div class="col-md-8 text-center">
+      <h1 class="mb-4">欢迎来到我的商城</h1>
       
       <% if Current.user %>
         <p>欢迎回来, <%= Current.user.username %></p>
@@ -13,37 +13,63 @@
         </div>
       <% end %>
 
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
-      <p>测试</p>
+      <div class="mt-5">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h4 class="card-title mb-3">网站功能介绍</h4>
+            <p class="text-start">本网站实现了以下功能：</p>
+            <ul class="text-start">
+              <li>用户认证系统 (注册、登录、密码修改) </li>
+              <li>商品管理 (CRUD操作、图片上传、分类管理) </li>
+              <li>购物车功能 (添加、修改数量、删除) </li>
+              <li>收藏夹功能 (收藏、取消收藏) </li>
+              <li>地址管理 (新增、编辑、删除、设为默认) </li>
+              <li>订单系统 (创建订单、状态管理、库存管理) </li>
+            </ul>
+          </div>
+        </div>
 
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-3">测试账号说明</h4>
+            <div class="alert alert-info">
+              所有账号的初始密码均为: <strong>123123</strong>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>角色</th>
+                    <th>账号</th>
+                    <th>说明</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>管理员</td>
+                    <td> root | 1@1 </td>
+                    <td>拥有所有权限，无法手动创建，密码固定</td>
+                  </tr>
+                  <tr>
+                    <td>员工</td>
+                    <td>user2 | user2@example.com</td>
+                    <td>可以管理商品和处理订单</td>
+                  </tr>
+                  <tr>
+                    <td>买家</td>
+                    <td>user1 | user1@example.com</td>
+                    <td>普通用户，可以购物和管理订单</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="alert alert-warning mt-3">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              注意: 管理员账号密码固定为123123, 无法通过页面修改
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

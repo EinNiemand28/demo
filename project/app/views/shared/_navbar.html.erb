@@ -23,22 +23,25 @@
         </li>
         
         <% if Current.user %>
+          <% if Current.user.buyer? %>
+            <li class="nav-item">
+              <%= link_to cart_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
+                <i class="bi bi-cart me-1"></i>购物车
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to favorites_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'favorites'}" do %>
+                <i class="bi bi-heart me-1"></i>收藏夹
+              <% end %>
+            </li>
+          <% end %>
+
           <li class="nav-item">
-            <%= link_to cart_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'carts'}" do %>
-              <i class="bi bi-cart me-1"></i>购物车
+            <%= link_to orders_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'orders'}" do %>
+              <i class="bi bi-receipt me-1"></i>
+              <%= Current.user&.admin? || Current.user&.worker? ? "订单管理" : "我的订单" %>
             <% end %>
           </li>
-          <li class="nav-item">
-            <%= link_to favorites_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'favorites'}" do %>
-              <i class="bi bi-heart me-1"></i>收藏夹
-            <% end %>
-          </li>
-          <li class="nav-item">
-            <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'orders'}" do %>
-              <i class="bi bi-receipt me-1"></i>我的订单
-            <% end %>
-          </li>
-          
 
           <% if Current.user.admin? || Current.user.worker? %>
             <li class="nav-item">

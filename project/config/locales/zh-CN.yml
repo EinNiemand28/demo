@@ -4,6 +4,13 @@ zh-CN:
     worker: 员工
     admin: 管理员
 
+  statuses:
+    unpaid: 未付款
+    paid: 已付款
+    shipped: 已发货
+    completed: 已完成
+    canceled: 已取消
+
   time:
     formats:
       default: "%Y-%m-%d %H:%M:%S"
@@ -95,6 +102,11 @@ zh-CN:
             user_id:
               blank: "用户不能为空"
               not_a_number: "用户必须为数字"
+        order:
+          attributes:
+            address:
+              blank: "收货地址不能为空"
+              required: "收货地址必填"
 
   views:
     pagination:
@@ -133,6 +145,13 @@ zh-CN:
         create: "地址添加成功"
         update: "地址更新成功"
         delete: "地址删除成功"
+      order:
+        create: "订单创建成功"
+        paid: "付款成功"
+        shipped: "订单已发货"
+        completed: "订单已完成"
+        canceled: "订单已取消"
+        delete: "订单删除成功"
     error:
       unauthorized: "您没有权限执行此操作"
       user:
@@ -162,3 +181,8 @@ zh-CN:
         create: "地址添加失败"
         update: "地址更新失败"
         delete: "地址删除失败"
+      order:
+        create: "订单创建失败"
+        update: "订单状态更新失败"
+        delete: "订单删除失败"
+        shipped: "商品库存不足，无法发货"
