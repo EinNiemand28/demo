@@ -26,44 +26,50 @@
                 </div>
               </div>
               <div class="col-md-8">
-                <div class="card-body">
-                  <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="card-title fs-4 fw-bold mb-0 text-primary">
-                      <%= link_to product.name, product_path(product), class: "text-decoration-none text-primary" %>
-                    </h5>
-                    <span class="badge bg-light text-secondary border">
-                      <i class="bi bi-diagram-2 me-1"></i>
-                      <%= product.category.full_path %>
-                    </span>
+                <div class="d-flex flex-column h-100">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                      <h5 class="card-title fs-4 fw-bold mb-0 text-primary">
+                        <%= link_to product.name, product_path(product), class: "text-decoration-none text-primary" %>
+                      </h5>
+                      <span class="badge bg-light text-secondary border">
+                        <i class="bi bi-diagram-2 me-1"></i>
+                        <%= product.category.full_path %>
+                      </span>
+                    </div>
+                    <p class="card-text text-muted lh-base mb-3 mx-2">
+                      <%= truncate(product.description, length: 100) %>
+                    </p>
+                    <p class="card-text mb-2">
+                      <span class="badge bg-danger px-3 py-2 fs-6">
+                        ¥<%= number_with_precision(product.price, precision: 2) %>
+                      </span>
+                      <span class="badge bg-light text-dark border ms-2">
+                        <i class="bi bi-box-seam me-1"></i>库存: <%= product.stock %>
+                      </span>
+                    </p>
                   </div>
-                  <p class="card-text text-muted lh-base mb-3 mx-2">
-                    <%= truncate(product.description, length: 100) %>
-                  </p>
-                  <p class="card-text mb-2">
-                    <span class="badge bg-danger px-3 py-2 fs-6">
-                      ¥<%= number_with_precision(product.price, precision: 2) %>
-                    </span>
-                    <span class="badge bg-light text-dark border ms-2">
-                      <i class="bi bi-box-seam me-1"></i>库存: <%= product.stock %>
-                    </span>
-                  </p>
-                </div>
-                <div class="card-footer d-flex justify-content-end gap-2">
-                  <%= link_to product_path(product), class: "btn btn-success" do %>
-                    <i class="bi bi-info-circle me-1"></i>详情
-                  <% end %>
-                  <button type="button" 
-                          class="btn btn-danger"
-                          data-action="remove-favorite"
-                          data-favorite-id="<%= favorite.id %>">
-                    <i class="bi bi-heart-fill me-1"></i>取消收藏
-                  </button>
-                  <button type="button" 
-                          class="btn btn-primary"
-                          data-action="add-to-cart"
-                          data-product-id="<%= product.id %>">
-                    <i class="bi bi-cart-plus me-1"></i>加入购物车
-                  </button>
+                  <div class="card-footer">
+                    <div class="d-flex justify-content-end">
+                      <div class="btn-group">
+                        <%= link_to product_path(product), class: "btn btn-success" do %>
+                          <i class="bi bi-info-circle me-1"></i>详情
+                        <% end %>
+                        <button type="button" 
+                                class="btn btn-danger"
+                                data-action="remove-favorite"
+                                data-favorite-id="<%= favorite.id %>">
+                          <i class="bi bi-heart-fill me-1"></i>取消收藏
+                        </button>
+                        <button type="button" 
+                                class="btn btn-primary"
+                                data-action="add-to-cart"
+                                data-product-id="<%= product.id %>">
+                          <i class="bi bi-cart-plus me-1"></i>加入购物车
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
