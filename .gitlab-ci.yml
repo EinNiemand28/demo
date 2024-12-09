@@ -10,10 +10,10 @@
 
 deploy-demo:
   stage: deploy
-  before_script:
-    - apt-get update -qq
-    - apt-get install -y libmysqlclient-dev
-    - apt-get install cron
+  # before_script:
+  #   - apt-get update -qq
+  #   - apt-get install -y libmysqlclient-dev
+  #   - apt-get install cron
   script:
     - rsync -arv --delete --exclude="*.sqlite3" ./demo /
     - cd /demo

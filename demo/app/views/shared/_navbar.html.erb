@@ -1,0 +1,35 @@
+<nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white shadow-sm py-3">
+  <div class="container">
+    <%= link_to root_path, class: "navbar-brand d-flex align-items-center" do %>
+      <i class="bi bi-shop me-2 fs-4"></i>
+      <span class="fw-bold text-primary fs-4">MyShop</span>
+    <% end %>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <%= link_to root_path, class: "nav-link fs-5 #{'active fw-bold' if current_page?(root_path)}" do %>
+            <i class="bi bi-house-door me-1"></i>首页
+          <% end %>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav align-items-center">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Dropdown button
+          </button>
+          <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Action</a></li>
+              <li><a class="dropdown-item" href="#">Another action</a></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+          </ul>
+        </div>
+      </ul>
+    </div>
+  </div>
+</nav>
