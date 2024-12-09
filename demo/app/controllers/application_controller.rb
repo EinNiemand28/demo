@@ -1,29 +1,22 @@
 class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
-  before_action :configure_permitted_parameters, if: :devise_controller?
-  include ApplicationHelper
 
-  protected
+  before_action :set_current_request_details
+  before_action :authenticate
 
-  def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_in, keys: [:login])
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:name, :email, :telephone, :password, :password_confirmation])
-    devise_parameter_sanitizer.permit(:account_update, keys: [:name, :email, :telephone, :role_level, :password, :password_confirmation, :profile_picture])
+  private
+  def authenticate
+    redirect_to sign_in_path unless Current.user
   end
 
-  def ensure_admin!
-    unless user_signed_in? && current_user.admin?
-      redirect_to root_path, alert: "您没有权限访问该页面"
-    end
-  end
+  def set_current_request_details
+    Current.user_agent = request.user_agent
+    Current.ip_address = request.ip
 
-  # redirect_back_with_fallback notice: '操作成功'
-  def redirect_back_with_fallback(fallback_location, **args)
-    if request.referer.present? && request.referer != request.url
-      redirect_back(fallback_location: fallback_location, **args)
-    else
-      redirect_to fallback_location, **args
+    if session_token = (Rails.env.test? ? cookies[:session_token] : cookies.permanent.signed[:session_token])
+      Current.session = Session.find_by_id(session_token)
+      Current.user = Current.session&.user
     end
   end
 end

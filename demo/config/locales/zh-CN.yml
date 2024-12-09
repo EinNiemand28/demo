@@ -1,0 +1,68 @@
+zh-CN:
+  time:
+    formats:
+      default: "%Y-%m-%d %H:%M:%S"
+      long: "%Y年%m月%d日 %H时%M分"
+      short: "%m月%d日 %H:%M"
+
+  date:
+    formats:
+      default: "%Y-%m-%d"
+      long: "%Y年%m月%d日"
+      short: "%m月%d日"
+
+  activerecord:
+    enums:
+      user:
+        student: "学生"
+        teacher: "老师"
+        admin: "管理员"
+    errors:
+      models:
+        user:
+          attributes:
+            username:
+              blank: "用户名不能为空"
+              taken: "用户名已存在"
+              too_short: "用户名长度不能少于%{count}个字符"
+              too_long: "用户名长度不能超过%{count}个字符"
+            email:
+              invalid: "邮箱格式不正确"
+              taken: "该邮箱已被使用"
+            phone:
+              invalid: "手机号码格式不正确"
+              taken: "该手机号码已被使用"
+            password:
+              blank: "密码不能为空"
+              too_short: "密码长度不能少于%{count}个字符"
+            password_confirmation:
+              confirmation: "两次输入的密码不一致"
+            base:
+              email_or_phone_required: "邮箱和手机号码至少填写一个"
+
+  views:
+    pagination:
+      first: "首页"
+      last: "尾页"
+      previous: "上一页"
+      next: "下一页"
+      truncate: "..."
+
+  messages:
+    success:
+      user:
+        login: "登录成功! 即将跳转到首页.."
+        signup: "注册成功! 即将跳转到首页.."
+        logout: "已成功登出"
+        update: "个人资料已更新"
+        password_update: "密码修改成功!"
+        delete: "账号已注销"
+    error:
+      unauthorized: "您没有权限执行此操作"
+      user:
+        login: "账号或密码错误"
+        signup: "注册信息有误"
+        update: "个人资料更新失败"
+        password_wrong: "原密码错误"
+        password_update: "密码修改失败"
+        delete: "账号注销失败"

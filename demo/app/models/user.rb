@@ -1,103 +1,112 @@
 class User < ApplicationRecord
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
-  validates :name, presence: true, length: { minimum: 2, maximum: 50 }
-  validates :email, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP, message: "请输入正确的邮箱地址" }, allow_blank: true, length: { maximum: 100 }
-  validates :telephone, uniqueness: true, format: { with: /\A1[3-9]\d{9}\z/, message: "请输入正确的手机号码" }, allow_blank: true
-  validates :password, length: { minimum: 6 }, allow_blank: true
-  validate :email_or_telephone_present
+  has_secure_password
 
-  has_many :organized_events, class_name: "Event", foreign_key: "organizer_teacher_id", dependent: :destroy
-  has_many :teacher_events, foreign_key: "user_id", dependent: :destroy
-  has_many :associated_events, through: :teacher_events, source: :event
+  # generates_token_for :email_verification, expires_in: 2.days do
+  #   email
+  # end
 
-  has_many :student_events, foreign_key: "user_id", dependent: :destroy
-  has_many :registered_events, -> { where(student_events: { status: :registered }) }, through: :student_events, source: :event
+  # generates_token_for :password_reset, expires_in: 20.minutes do
+  #   password_salt.last(10)
+  # end
 
-  has_many :student_volunteer_positions, foreign_key: "user_id", dependent: :destroy
-  has_many :registered_volunteer_positions, -> { where(student_volunteer_positions: { status: :approved }) }, through: :student_volunteer_positions, source: :volunteer_position
+  has_many :sessions, dependent: :destroy
 
-  has_many :feedbacks, dependent: :destroy
+  validates :username, uniqueness: true, presence: true, length: { minimum: 3, maximum: 50 }
+  validates :email, uniqueness: { allow_blank: true }, length: { maximum: 50 }, format: { 
+    with: URI::MailTo::EMAIL_REGEXP, 
+    message: "请输入正确的邮箱地址", 
+    allow_blank: true }
+  validates :phone, uniqueness: { allow_blank: true }, format: { 
+    with: /\A[0-9]{11}\z/, 
+    message: "请输入正确的手机号码", 
+    allow_blank: true }
+  validate :email_or_phone_present
+  before_save :normalize_empty_strings
 
-  has_many :notification_users, dependent: :destroy
-  has_many :notifications, through: :notification_users, source: :notification
+  validates :password, allow_nil: true, length: { minimum: 6 }
 
-  enum :role_level, { student: 0, teacher: 1, admin: 2 }
+  normalizes :username, with: -> { _1.strip }
+  normalizes :email, with: -> { _1.strip.downcase }
+  normalizes :phone, with: -> { _1.strip }
+
+  enum :role, { :student => 0, :teacher => 1, :admin => 2 }
   after_initialize :set_default_role, if: :new_record?
 
-  has_one_attached :avatar_picture do |attachable|
-    attachable.variant :thumb, resize_to_limit: [100, 100]
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_fill: [150, 150]
   end
 
-  validate :acceptable_avatar_picture
+  validate :acceptable_avatar
 
-  attr_writer :login
-
-  def login
-    @login || self.email || self.telephone
+  def admin?
+    self.role.to_sym == :admin
   end
 
-  def self.find_for_database_authentication(warden_conditions)
-    conditions = warden_conditions.dup
-    if (login = conditions.delete(:login))
-      where(conditions.to_h).where(["lower(email) = :value OR lower(telephone) = :value", { value: login.downcase }]).first
-    elsif conditions.key?(:email) || conditions.key?(:telephone)
-      where(conditions.to_h).first
+  def teacher?
+    self.role.to_sym == :teacher
+  end
+
+  def student?
+    self.role.to_sym == :student
+  end
+
+  # before_validation if: :email_changed?, on: :update do
+  #   self.verified = false
+  # end
+
+  after_update if: :password_digest_previously_changed? do
+    sessions.where.not(id: Current.session).delete_all
+  end
+
+  def self.find_by_login(login)
+    where("username = :login OR email = :login OR phone = :login", login: login).first
+  end
+
+  scope :search, ->(query) {
+    where('username LIKE :q OR email LIKE :q OR phone LIKE :q', q: "%#{query}%")
+  }
+
+  scope :with_role, ->(role) {
+    where(role: role) if role.present?
+  }
+
+  def avatar_thumbnail
+    Rails.cache.fetch([self, "avatar_thumbnail"], expires_in: 1.hour) do
+      if avatar.attached?
+        avatar.variant(resize_to_fill: [40, 40]).processed
+      else
+        "default_avatar.png"
+      end
+    end
+  end
+
+  private
+  def acceptable_avatar
+    return unless avatar.attached?
+
+    unless avatar.blob.byte_size <= 5.megabytes
+      errors.add(:avatar, "图片大小不能超过5MB")
+    end
+
+    acceptable_types = ["image/jpeg", "image/png"]
+    unless acceptable_types.include?(avatar.blob.content_type)
+      errors.add(:avatar, "只支持 JPEG 或 PNG 格式")
     end
   end
 
   def set_default_role
-    self.role_level ||= :student
+    self.role ||= :student
   end
 
-  def admin?
-    self.role_level == "admin"
-  end
-
-  def teacher?
-    self.role_level == "teacher"
-  end
-
-  def self.ransackable_attributes(auth_object = nil)
-    ["email", "id", "name", "telephone", "role_level"]
-  end
-
-  def contact_info
-    if telephone.present?
-      telephone
-    else
-      email
+  def email_or_phone_present
+    if email.blank? && phone.blank?
+      errors.add(:email, "邮箱和手机号码至少填写一个")
+      errors.add(:phone, "邮箱和手机号码至少填写一个")
     end
   end
 
-  def unread_notifications_count
-    notification_users.where(is_read: false).count
-  end
-
-  def notifications_with_status
-    notification_users.includes(:notification).order(created_at: :desc)
-  end
-
-  private
-
-  def email_or_telephone_present
-    if email.blank? && telephone.blank?
-      errors.add(:base, "邮箱和手机号码至少填写一个")
-    end
-  end
-
-  def acceptable_avatar_picture
-    return unless avatar_picture.attached?
-
-    unless avatar_picture.blob.byte_size <= 5.megabytes
-      errors.add(:avatar_picture, "图片大小不能超过5MB")
-    end
-
-    acceptable_types = ["image/jpeg", "image/png"]
-    unless acceptable_types.include?(avatar_picture.content_type)
-      errors.add(:avatar_picture, "图片格式必须为 JPEG 或 PNG ")
-    end
+  def normalize_empty_strings
+    self.email = nil if email.blank?
+    self.phone = nil if phone.blank?
   end
 end

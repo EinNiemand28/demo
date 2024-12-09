@@ -1,0 +1,207 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-body p-5">
+          <h2 class="card-title text-center mb-4">创建账号</h2>
+
+          <%= form_with(model: @user, url: sign_up_path, class: "needs-validation", novalidate: true) do |form| %>
+            <div class="form-floating mb-3">
+              <%= form.text_field :username, 
+                    class: "form-control",
+                    required: true,
+                    minlength: 3,
+                    maxlength: 50,
+                    placeholder: "用户名" %>
+              <%= form.label :username do %>
+                <i class="bi bi-person me-1"></i>用户名
+              <% end %>
+              <div class="invalid-feedback">
+                请输入3-50个字符的用户名
+              </div>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= form.email_field :email, 
+                    class: "form-control",
+                    placeholder: "邮箱" %>
+              <%= form.label :email do %>
+                <i class="bi bi-envelope me-1"></i>邮箱(与手机号码至少有一)
+              <% end %>
+              <div class="invalid-feedback">
+                请输入有效的邮箱地址或手机号码
+              </div>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= form.telephone_field :phone, 
+                    class: "form-control",
+                    pattern: "[0-9]{11}",
+                    placeholder: "手机号码" %>
+              <%= form.label :phone do %>
+                <i class="bi bi-phone me-1"></i>手机号码(可选)
+              <% end %>
+              <div class="invalid-feedback">
+                请输入有效的邮箱地址或手机号码
+              </div>
+            </div>
+
+            <div class="form-floating mb-3">
+              <%= form.password_field :password, 
+                    class: "form-control",
+                    required: true,
+                    minlength: 6,
+                    placeholder: "密码" %>
+              <%= form.label :password do %>
+                <i class="bi bi-lock me-1"></i>密码
+              <% end %>
+              <div class="invalid-feedback">
+                请输入至少6个字符的密码
+              </div>
+            </div>
+
+            <div class="form-floating mb-4">
+              <%= form.password_field :password_confirmation, 
+                    class: "form-control",
+                    required: true,
+                    placeholder: "确认密码" %>
+              <%= form.label :password_confirmation do %>
+                <i class="bi bi-check2-circle me-1"></i>确认密码
+              <% end %>
+              <div class="invalid-feedback">
+                两次输入的密码不一致
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <%= form.submit "注册", class: "btn btn-primary btn-lg" %>
+            </div>
+          <% end %>
+
+          <div class="text-center mt-4">
+            <p class="text-muted">
+              已有账号？
+              <%= link_to "立即登录", sign_in_path, class: "text-decoration-none" %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+(() => {
+  'use strict'
+
+  const forms = document.querySelectorAll('.needs-validation')
+
+  const checkInputValidity = (input, form) => {
+    if (input.name === 'user[email]' || input.name === 'user[phone]') {
+      const email = form.querySelector('input[name="user[email]"]')
+      const phone = form.querySelector('input[name="user[phone]"]')
+
+      const emailValid = email.value && email.checkValidity()
+      const phoneValid = phone.value && phone.checkValidity()
+      
+      const isValid = emailValid || phoneValid
+      if (email.value && phone.value) {
+        email.classList.toggle('is-valid', emailValid)
+        email.classList.toggle('is-invalid', !emailValid)
+        phone.classList.toggle('is-valid', phoneValid)
+        phone.classList.toggle('is-invalid', !phoneValid)
+      } else {
+        email.classList.toggle('is-valid', isValid)
+        email.classList.toggle('is-invalid', !isValid)
+        phone.classList.toggle('is-valid', isValid)
+        phone.classList.toggle('is-invalid', !isValid)
+      }
+      
+      return isValid
+    }
+    
+    if (input.name == 'user[password_confirmation]') {
+      const password = form.querySelector('input[name="user[password]"]')
+      const isValid = input.value && input.value === password.value
+      
+      input.classList.toggle('is-valid', isValid)
+      input.classList.toggle('is-invalid', !isValid)
+      
+      return isValid
+    }
+
+    const isValid = input.value && input.checkValidity()
+    input.classList.toggle('is-valid', isValid)
+    input.classList.toggle('is-invalid', !isValid)
+
+    return isValid
+  }
+
+  Array.from(forms).forEach(form => {
+    const inputs = form.querySelectorAll('input')
+
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        checkInputValidity(input, form)
+      })
+      
+      input.addEventListener('blur', () => {
+        checkInputValidity(input, form)
+      })
+    })
+
+    form.addEventListener('submit', event => {
+      event.preventDefault()
+
+      const formData = new FormData(form)
+      const userData = {}
+      formData.forEach((value, key) => {
+        // 将 user[field] 转换为正确的嵌套格式
+        const match = key.match(/user\[(.*?)\]/)
+        if (match) {
+          userData[match[1]] = value
+        }
+      })
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ user: userData })
+      })
+      .then(response =>  response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error)
+        showToast({
+          message: "注册失败, 请稍后重试",
+          type: 'danger',
+          delay: 3000
+        })
+      })
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+</script>
+<% end %>
