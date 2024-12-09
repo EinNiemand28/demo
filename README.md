@@ -670,7 +670,7 @@ npm install -g yarn
 yarn config set registry https://registry.npmmirror.com
 # 清除缓存
 yarn cache clean
-（下载仍超时，记得删除Lock文件重新进行下载）
+#（下载若仍超时，记得删除Lock文件重新进行下载）
 
 # 创建项目
 rails new project -G -M --css=bootstrap
