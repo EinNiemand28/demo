@@ -653,11 +653,83 @@ class OrdersController < ApplicationController
 end
 ```
 
+### 文件存储
+
+#### 配置与初始化
+
+```shell
+bundle add image_processing
+rails active_storage:install
+rails db:migrate
+```
+
+```ruby
+# config/storage.yml
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+```
+
+#### 模型配置
+
+```ruby
+class Product < ApplicationRecord
+  has_one_attached :image
+  validate :acceptable_image
+    
+  def image_variant(variant)
+    case variant
+    when :thumb
+      image.variant(resize_to_fill: [50, 50])
+    when :medium
+      image.variant(resize_to_fill: [250, 250])
+    else
+      image.variant(resize_to_fill: [400, 400])
+    end
+  end
+    
+  private
+  def acceptable_image
+    return unless image.attached?
+
+    unless image.blob.byte_size <= 5.megabyte
+      errors.add(:image, '文件大小不能超过 5MB')
+    end
+
+    acceptable_types = ["image/jpeg", "image/png"]
+    unless acceptable_types.include?(image.content_type)
+      errors.add(:image, '只支持 JPEG 或 PNG 格式')
+    end
+  end
+end
+```
+
+#### 视图展示
+
+```erb
+# 上传表单
+<%= form_with(model: product, multipart: true) do |f| %>
+  <div class="mb-3">
+    <%= f.label :image, class: "form-label" %>
+    <%= f.file_field :image, 
+          accept: 'image/png,image/jpeg,image/jpg',
+          class: "form-control" %>
+  </div>
+<% end %>
+
+# 图片展示
+<% if product.image.attached? %>
+  <%= image_tag product.image_variant(:medium), class: "img-fluid rounded-start", style: "height: 100%; object-fit: cover;" %>
+<% else %>
+  <%= image_tag "default_product.png", class: "img-fluid rounded-start", style: "height: 100%; object-fit: cover;" %>
+<% end %>
+```
+
 
 
 ## 备注：bootstrap 环境准备
 
-```shell
+```bash
 # 添加 NodeSource 仓库
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 # 安装 Node.js
@@ -670,7 +742,7 @@ npm install -g yarn
 yarn config set registry https://registry.npmmirror.com
 # 清除缓存
 yarn cache clean
-#（下载若仍超时，记得删除Lock文件重新进行下载）
+（下载仍超时，记得删除Lock文件重新进行下载）
 
 # 创建项目
 rails new project -G -M --css=bootstrap
