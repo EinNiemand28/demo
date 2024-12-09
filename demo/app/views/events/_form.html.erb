@@ -1,58 +1,162 @@
-<%= form_with(model: event, local: true) do |f| %>
-  <% if event.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(event.errors.count, "错误") %> 阻止活动被保存：</h2>
-      <ul>
-        <% event.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
+<%= form_with(model: event, data: { turbo: false }, class: "needs-validation", multipart: true) do |form| %>
+  <div class="row g-4">
+    <!-- 活动标题 -->
+    <div class="col-12">
+      <div class="form-floating">
+        <%= form.text_field :title, 
+              class: "form-control form-control-lg",
+              required: true,
+              placeholder: "活动标题" %>
+        <%= form.label :title, class: "text-muted" do %>
+          <i class="bi bi-bookmark me-1"></i>活动标题
         <% end %>
-      </ul>
+      </div>
     </div>
-  <% end %>
 
-  <div class="field">
-    <%= f.label :title %><br />
-    <%= f.text_field :title %>
-  </div>
+    <!-- 活动描述 -->
+    <div class="col-12">
+      <div class="form-floating">
+        <%= form.text_area :description, 
+              class: "form-control",
+              style: "height: 120px; resize: none;",
+              required: true,
+              placeholder: "活动描述" %>
+        <%= form.label :description, class: "text-muted" do %>
+          <i class="bi bi-file-text me-1"></i>活动描述
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :description %><br />
-    <%= f.text_area :description %>
-  </div>
+    <!-- 活动时间 -->
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= form.datetime_local_field :start_time, 
+              class: "form-control", 
+              required: true,
+              placeholder: "开始时间" %>
+        <%= form.label :start_time, class: "text-muted" do %>
+          <i class="bi bi-calendar-check me-1"></i>开始时间
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :start_time %>
-    <%= f.datetime_select :start_time %>
-  </div>
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= form.datetime_local_field :end_time, 
+              class: "form-control", 
+              required: true,
+              placeholder: "结束时间" %>
+        <%= form.label :end_time, class: "text-muted" do %>
+          <i class="bi bi-calendar-x me-1"></i>结束时间
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :end_time %>
-    <%= f.datetime_select :end_time %>
-  </div>
+    <!-- 活动地点 -->
+    <div class="col-12">
+      <div class="form-floating">
+        <%= form.text_field :location, 
+              class: "form-control",
+              required: true,
+              placeholder: "活动地点" %>
+        <%= form.label :location, class: "text-muted" do %>
+          <i class="bi bi-geo-alt me-1"></i>活动地点
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :location %><br />
-    <%= f.text_field :location %>
-  </div>
+    <!-- 报名截止和人数限制 -->
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= form.datetime_local_field :registration_deadline, 
+              class: "form-control", 
+              required: true,
+              placeholder: "报名截止时间" %>
+        <%= form.label :registration_deadline, class: "text-muted" do %>
+          <i class="bi bi-clock me-1"></i>报名截止时间
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :registration_deadline %>
-    <%= f.datetime_select :registration_deadline %>
-  </div>
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= form.number_field :max_participants, 
+              class: "form-control", 
+              min: 1, 
+              required: true,
+              placeholder: "最大参与人数" %>
+        <%= form.label :max_participants, class: "text-muted" do %>
+          <i class="bi bi-people me-1"></i>最大参与人数
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :max_participants %>
-    <%= f.number_field :max_participants, min: 0 %>
-  </div>
-
-  <div class="field">
-    <%= f.label :status %><br />
-    <%= f.select :status, Event.statuses.keys.map { |status| [status.humanize, status] }, include_blank: false %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit '保存'%>
+    <!-- 按钮组 -->
+    <div class="col-12">
+      <div class="d-flex justify-content-end gap-2">
+        <%= link_to events_path, class: "btn btn-light px-4" do %>
+          <i class="bi bi-x-lg me-1"></i>取消
+        <% end %>
+        <%= button_tag type: :submit, class: "btn btn-primary px-4" do %>
+          <i class="bi bi-check-lg me-1"></i>保存
+        <% end %>
+      </div>
+    </div>
   </div>
 <% end %>
 
-<%= link_to '返回活动列表', events_path %>
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form.needs-validation')
+
+  if (form) {
+    form.onsubmit = async (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      try {
+        const formData = new FormData(form)
+
+        const methodInput = form.querySelector('input[name="_method"]')
+        const method = methodInput ? methodInput.value.toUpperCase() : 'POST'
+
+        const response = await fetch(form.action, {
+          method: method,
+          headers: {
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: formData
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url,
+            delay: 1500
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      } catch (error) {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      }
+
+      return false
+    }
+  }
+})
+</script>
+<% end %>

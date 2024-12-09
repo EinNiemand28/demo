@@ -6,4 +6,15 @@ module UsersHelper
       image_tag 'default_avatar.png', size: size, id: 'avatar preview'
     end
   end
+
+  def user_role(role)
+    case role
+    when 'admin'
+      t('activerecord.enums.user.admin')
+    when 'teacher'
+      t('activerecord.enums.user.teacher')
+    when 'student'
+      t('activerecord.enums.user.student')
+    end
+  end
 end

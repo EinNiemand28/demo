@@ -1,226 +1,246 @@
-<h1>活动列表</h1>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <div class="row align-items-center mb-4">
+        <div class="col-md-4">
+          <h4 class="card-title mb-0">
+            <i class="bi bi-calendar2-week me-2"></i>活动列表
+          </h4>
+        </div>
+        
+        <div class="col-md-8">
+          <div class="d-flex justify-content-end gap-2">
+            <div class="btn-group">
+              <%= link_to "全部", 
+                    events_path, 
+                    class: "btn btn-outline-secondary #{params[:status].nil? ? 'active' : ''}" %>
+              
+              <% Event.statuses.each do |status, _value| %>
+                <%= link_to event_status(status), 
+                      events_path(status: status), 
+                      class: "btn btn-outline-secondary #{params[:status] == status ? 'active' : ''}" %>
+              <% end %>
+            </div>
 
-<% if user_signed_in? && (current_user.admin? || current_user.teacher?) %>
-  <%= link_to '创建新活动', new_event_path %>
-<% end %>
-
-<h2>所有活动</h2>
-<table>
-  <thead>
-    <tr>
-      <th>标题</th>
-      <th>描述</th>
-      <th>开始时间</th>
-      <th>结束时间</th>
-      <th>地点</th>
-      <th>状态</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @events.each do |event| %>
-      <tr>
-        <td><%= link_to event.title, event_path(event) %></td>
-        <td><%= truncate(event.description, length: 50) %></td>
-        <td><%= format_datetime(event.start_time) %></td>
-        <td><%= format_datetime(event.end_time) %></td>
-        <td><%= event.location %></td>
-        <td><%= event.status.humanize %></td>
-        <td>
-          <%= link_to '查看', event_path(event) %>
-          <% if current_user.admin? %>
-            <%= link_to '编辑', edit_event_path(event) %>
-            <%= link_to '删除', event_path(event), data: {
-              turbo_method: :delete,
-              turbo_confirm: "确定要删除活动 #{event.title} 吗？"
-            } %>
-            <%= link_to '取消活动', cancel_event_path(event), data: {
-              turbo_method: :patch,
-              turbo_confirm: "确定要取消活动 #{event.title} 吗？"
-            } %>
-          <% end %>
-          <% if current_user.student? && event.status == 'upcoming' %>
-            <%= link_to '报名参加', event_student_events_path(event), data: { turbo_method: :post } %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<% if current_user.admin? || current_user.teacher? %>
-  <h2>待批准活动</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>标题</th>
-        <th>描述</th>
-        <th>开始时间</th>
-        <th>结束时间</th>
-        <th>地点</th>
-        <th>状态</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @pending_events.each do |event| %>
-        <tr>
-          <td><%= link_to event.title, event_path(event) %></td>
-          <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= format_datetime(event.start_time) %></td>
-          <td><%= format_datetime(event.end_time) %></td>
-          <td><%= event.location %></td>
-          <td><%= event.status.humanize %></td>
-          <td>
-            <%= link_to '查看', event_path(event) %>
-            <% if current_user.admin? || event.organizer_teacher == current_user %>
-              <%= link_to '编辑', edit_event_path(event) %>
-              <%= link_to '删除', event_path(event), data: {
-                turbo_method: :delete,
-                turbo_confirm: "确定要删除活动 #{event.title} 吗？"
-              } %>
+            <!-- 创建按钮 -->
+            <% if Current.user&.admin? || Current.user&.teacher? %>
+              <%= link_to new_event_path, class: "btn btn-primary" do %>
+                <i class="bi bi-plus-lg me-1"></i>新建活动
+              <% end %>
             <% end %>
-            <% if current_user.admin? && event.status == 'pending' %>
-              <%= link_to '批准活动', approve_event_path(event), data: {
-                turbo_method: :patch,
-                turbo_confirm: "确定要批准活动 #{event.title} 吗？"
-              } %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-<% end %>
+          </div>
+        </div>
+      </div>
 
-<% if current_user.student? %>
-  <h2>已报名活动</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>标题</th>
-        <th>描述</th>
-        <th>开始时间</th>
-        <th>结束时间</th>
-        <th>地点</th>
-        <th>状态</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @registered_events.each do |event| %>
-        <tr>
-          <td><%= link_to event.title, event_path(event) %></td>
-          <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= format_datetime(event.start_time) %></td>
-          <td><%= format_datetime(event.end_time) %></td>
-          <td><%= event.location %></td>
-          <td><%= event.status.humanize %></td>
-          <td>
-            <%= link_to '查看', event_path(event) %>
-            <% if event.status == "upcoming" %>
-              <%= link_to '取消报名', event_student_event_path(event, current_user.student_events.find_by(event: event)), data: { turbo_method: :delete } %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+      <!-- 活动列表 -->
+      <% if @events.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center" width="15%">活动名称</th>
+                <th class="text-center" width="20%">活动信息</th>
+                <th class="text-center" width="20%">活动时间</th>
+                <th class="text-center" width="15%">状态</th>
+                <th class="text-center" width="10%">报名人数</th>
+                <th class="text-center" width="20%">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @events.each do |event| %>
+                <tr>
+                  <td class="fw-medium text-center"><%= event.title %></td>
+                  <td class="text-center">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-person align-middle me-1"></i><%= event.organizing_teacher.username %>
+                    </small>
+                    <small class="text-muted d-block">
+                      <i class="bi bi-geo-alt align-middle me-1"></i><%= event.location %>
+                    </small>
+                    <small class="text-muted d-block">
+                      <i class="bi bi-clock align-middle me-1"></i>报名截止：<%= l event.registration_deadline, format: :short %>
+                    </small>
+                  </td>
+                  <td class="text-center">
+                    <small class="text-muted d-block">
+                      <i class="bi bi-calendar-check align-middle me-1"></i><%= l event.start_time, format: :short %>
+                    </small>
+                    <small class="text-muted d-block">
+                      <i class="bi bi-calendar-x align-middle me-1"></i><%= l event.end_time, format: :short %>
+                    </small>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge <%= event_status_badge_class(event.status) %>">
+                      <%= event_status(event.status) %>
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-success text-light">
+                      <%= event.participants.count %>/<%= event.max_participants %>
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group btn-group-sm">
+                      <%= link_to event_path(event), class: "btn btn-outline-primary d-inline-flex align-items-center", title: "查看详情" do %>
+                        <i class="bi bi-info align-middle me-1"></i><span>详情</span>
+                      <% end %>
+                      
+                      <% if Current.user&.student? && event.upcoming? %>
+                        <% if Current.user.participated_events.include?(event) %>
+                          <% if event.registration_deadline > Time.current %>
+                            <% student_event = Current.user.student_events.find_by(event: event) %>
+                            <%= button_to event_student_event_path(event, student_event),
+                                  method: :delete,
+                                  class: "btn btn-outline-warning d-inline-flex align-items-center",
+                                  title: "取消报名",
+                                  form: { data: { action: "cancel-registration" } } do %>
+                              <i class="bi bi-person-dash align-middle me-1"></i><span>取消</span>
+                            <% end %>
+                          <% else %>
+                            <button type="button" 
+                                    class="btn btn-outline-success d-inline-flex align-items-center" disabled>
+                              <i class="bi bi-person-check align-middle me-1"></i><span>已报名</span>
+                            </button>
+                          <% end %>
+                        <% else %>
+                          <%= button_to event_student_events_path(event),
+                                method: :post,
+                                class: "btn btn-outline-success d-inline-flex align-items-center",
+                                title: "报名活动",
+                                form: { data: { action: "register-event" } } do %>
+                            <i class="bi bi-person-plus align-middle me-1"></i><span>报名</span>
+                          <% end %>
+                        <% end %>
+                      <% end %>
 
-  <h2>已申请的志愿者岗位</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>活动</th>
-        <th>岗位名称</th>
-        <th>志愿时长</th>
-        <th>报名截止时间</th>
-        <th>状态</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% current_user.student_volunteer_positions.includes(:volunteer_position => :event).each do |registration| %>
-        <tr>
-          <td><%= link_to registration.volunteer_position.event.title, event_path(registration.volunteer_position.event) %></td>
-          <td><%= registration.volunteer_position.name %></td>
-          <td><%= registration.volunteer_position.volunteer_hours %> 小时</td>
-          <td><%= format_datetime(registration.volunteer_position.registration_deadline) %></td>
-          <td><%= registration.status.humanize %></td>
-          <td>
-            <% if registration.pending? %>
-              <%= button_to '取消申请', cancel_event_volunteer_position_path(registration.volunteer_position.event, registration.volunteer_position), method: :patch, data: { turbo_confirm: "确定要取消申请吗？" } %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-<% end %>
+                      <% if Current.user&.admin? || Current.user == event.organizing_teacher %>
+                        <%= link_to edit_event_path(event), 
+                              class: "btn btn-outline-danger d-inline-flex align-items-center",
+                              title: "编辑活动" do %>
+                          <i class="bi bi-pencil align-middle me-1"></i><span>编辑</span>
+                        <% end %>
+                      <% end %>
 
-<% if current_user.teacher? %>
-  <h2>关联的活动</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>标题</th>
-        <th>描述</th>
-        <th>开始时间</th>
-        <th>结束时间</th>
-        <th>地点</th>
-        <th>状态</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @associated_events.each do |event| %>
-        <tr>
-          <td><%= link_to event.title, event_path(event) %></td>
-          <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= format_datetime(event.start_time) %></td>
-          <td><%= format_datetime(event.end_time) %></td>
-          <td><%= event.location %></td>
-          <td><%= event.status.humanize %></td>
-          <td>
-            <%= link_to '查看', event_path(event) %>
-          </td>
-        </tr>
+                      <% if Current.user&.admin? && event.pending? %>
+                        <%= button_to update_status_event_path(event, status: 'upcoming'),
+                              method: :patch,
+                              class: "btn btn-outline-success d-inline-flex align-items-center",
+                              title: "批准活动",
+                              data: { action: "approve-event" } do %>
+                          <i class="bi bi-check-lg align-middle me-1"></i><span>通过</span>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="d-flex justify-content-center mt-4">
+          <%= paginate @events %>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="bi bi-calendar2-x text-muted" style="font-size: 4rem;"></i>
+          <h5 class="mt-3 text-muted">暂无活动</h5>
+        </div>
       <% end %>
-    </tbody>
-  </table>
-  <h2>组织的活动</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>标题</th>
-        <th>描述</th>
-        <th>开始时间</th>
-        <th>结束时间</th>
-        <th>地点</th>
-        <th>状态</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @organized_events.each do |event| %>
-        <tr>
-          <td><%= link_to event.title, event_path(event) %></td>
-          <td><%= truncate(event.description, length: 50) %></td>
-          <td><%= format_datetime(event.start_time) %></td>
-          <td><%= format_datetime(event.end_time) %></td>
-          <td><%= event.location %></td>
-          <td><%= event.status.humanize %></td>
-          <td>
-            <%= link_to '查看', event_path(event) %>
-            <%= link_to '编辑', edit_event_path(event) %>
-            <% if event.status != 'canceled' %>
-              <%= link_to '取消活动', cancel_event_path(event), data: {
-                turbo_method: :patch,
-                turbo_confirm: "确定要取消活动 #{event.title} 吗？"
-              } %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
+    </div>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-action="approve-event"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要通过此活动审核吗？')) {
+        fetch(form.action, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message || '审核失败',
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误，请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="register-event"], [data-action="cancel-registration"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      const isRegister = form.dataset.action === 'register-event'
+      
+      fetch(form.action, {
+        method: isRegister ? 'POST' : 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1000
+          })
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(error => {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      })
+    })
+  })
+})
+</script>
 <% end %>

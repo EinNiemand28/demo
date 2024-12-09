@@ -1,102 +1,396 @@
-<h1><%= @event.title %></h1>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card shadow-sm">
+        <div class="card-body p-5">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-3">
+              <h3 class="card-title mb-0">
+                <i class="bi bi-calendar-event me-2"></i><%= @event.title %>
+              </h3>
+              <span class="badge <%= event_status_badge_class(@event.status) %> fs-6">
+                <%= event_status(@event.status) %>
+              </span>
+            </div>
+            
+            <div class="d-flex btn-group">
+              <% if Current.user.admin? || Current.user == @event.organizing_teacher %>
+                <%= link_to edit_event_path(@event), class: "btn btn-primary d-inline-flex align-items-center" do %>
+                  <i class="bi bi-pencil me-1"></i>编辑
+                <% end %>
+                
+                <%= button_to event_path(@event), 
+                      method: :delete,
+                      class: "btn btn-danger d-inline-flex align-items-center",
+                      data: { action: "delete-event" } do %>
+                  <i class="bi bi-trash me-1"></i>删除
+                <% end %>
+              <% end %>
+            </div>
+          </div>
 
-<p><strong>描述:</strong> <%= @event.description %></p>
-<p><strong>开始时间:</strong> <%= format_datetime(@event.start_time) %></p>
-<p><strong>结束时间:</strong> <%= format_datetime(@event.end_time) %></p>
-<p><strong>地点:</strong> <%= @event.location %></p>
-<p>
-  <strong>状态:</strong> <%= @event.status.humanize %>
-  <% if @event.status == "finished" %>
-    <%= link_to "查看活动反馈", event_feedbacks_path(@event) %>
-  <% end %>
-</p>
-<p><strong>报名截止时间:</strong> <%= format_datetime(@event.registration_deadline) %></p>
-<p><strong>报名人数 / 最大参与人数:</strong> <%= @event.participants.count %> / <%= @event.max_participants %></p>
-<p><strong>组织者:</strong> <%= @event.organizer_teacher.name %></p>
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <h5 class="text-muted mb-3">
+                <i class="bi bi-info-circle me-2"></i>基本信息
+              </h5>
+              <ul class="list-unstyled">
+                <li class="mb-2">
+                  <i class="bi bi-person text-primary me-2"></i>
+                  组织者：<%= link_to @event.organizing_teacher.username, user_path(@event.organizing_teacher), class: "text-decoration-none" %>
+                </li>
+                <li class="mb-2">
+                  <i class="bi bi-geo-alt text-danger me-2"></i>
+                  地点：<%= @event.location %>
+                </li>
+                <li class="mb-2">
+                  <i class="bi bi-people text-success me-2"></i>
+                  报名人数：<%= @event.participants.count %>/<%= @event.max_participants %>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="col-md-6">
+              <h5 class="text-muted mb-3">
+                <i class="bi bi-clock me-2"></i>时间信息
+              </h5>
+              <ul class="list-unstyled">
+                <li class="mb-2">
+                  <i class="bi bi-calendar-check text-primary me-2"></i>
+                  开始时间：<%= l @event.start_time, format: :long %>
+                </li>
+                <li class="mb-2">
+                  <i class="bi bi-calendar-x text-danger me-2"></i>
+                  结束时间：<%= l @event.end_time, format: :long %>
+                </li>
+                <li class="mb-2">
+                  <i class="bi bi-calendar-event text-warning me-2"></i>
+                  报名截止：<%= l @event.registration_deadline, format: :long %>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-<hr>
+          <div class="mb-4">
+            <h5 class="text-muted mb-3">
+              <i class="bi bi-people me-2"></i>关联教师
+            </h5>
+            
+            <% if @event.teachers.any? %>
+              <div class="list-group">
+                <% @event.teachers.each do |teacher| %>
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <%= link_to user_path(teacher), class: "text-decoration-none" do %>
+                      <i class="bi bi-person-badge me-2"></i><%= teacher.username %>
+                    <% end %>
+                    
+                    <% if (Current.user.admin? || Current.user == @event.organizing_teacher) && 
+                          (@event.start_time >= Time.current || Current.user.admin?) %>
+                      <%= button_to event_teacher_event_path(@event, @event.teacher_events.find_by(user: teacher)),
+                            method: :delete,
+                            class: "btn btn-sm btn-outline-danger",
+                            form: { data: { action: "remove-teacher" } } do %>
+                        <i class="bi bi-person-dash"></i>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-muted mb-0">暂无关联教师</p>
+            <% end %>
+            
+            <% if (Current.user.admin? || Current.user == @event.organizing_teacher) && 
+                  (@event.start_time >= Time.current || Current.user.admin?) %>
+              <div class="mt-3">
+                <%= form_with url: event_teacher_events_path(@event), 
+                      class: "d-flex gap-2",
+                      data: { action: "add-teacher" } do |f| %>
+                  <%= f.select :user_id,
+                        User.where(role: :teacher)
+                            .where.not(id: @event.teachers.pluck(:id))
+                            .map { |t| [t.username, t.id] },
+                        { prompt: "选择教师" },
+                        class: "form-select" %>
+                  <%= f.submit "添加教师", class: "btn btn-primary" %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
 
-<h2>关联教师</h2>
-<ul>
-  <% @event.teachers.each do |teacher| %>
-    <li>
-      <%= teacher.name %> , 
-      <%= teacher.contact_info %>
-      <% if current_user.admin? || current_user == @event.organizer_teacher %>
-        <%= link_to '移除', event_teacher_event_path(@event, teacher.teacher_events.find_by(event: @event)), data: { turbo_method: :delete } %>
-      <% end %>
-    </li>
-  <% end %>
-</ul>
+          <div class="mb-4">
+            <h5 class="text-muted mb-3">
+              <i class="bi bi-file-text me-2"></i>活动描述
+            </h5>
+            <div class="card bg-light">
+              <div class="card-body" style="text-indent: 0; color: #2c3e50; white-space: pre-line;">
+                <%= simple_format @event.description %>
+              </div>
+            </div>
+          </div>
 
-<% if current_user.admin? || current_user == @event.organizer_teacher %>
-  <%# <h3>添加教师</h3> %>
-  <%= form_with url: event_teacher_events_path(@event), data: { turbo_method: :post } do |f| %>
-    <div class="form-group">
-      <%# <%= label_tag :user_id, "选择教师" %>
-      <%= select_tag :user_id, options_for_select(User.where(role_level: :teacher).map { |teacher| ["#{teacher.name} (#{teacher.contact_info})", teacher.id] }), prompt: "请选择教师", class: "form-control" %>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group">
+              <%= link_to events_path, class: "btn btn-outline-secondary" do %>
+                <i class="bi bi-arrow-left me-1"></i>返回列表
+              <% end %>
+              <% if Current.user&.student? && @event.upcoming? %>
+                <% if Current.user.participated_events.include?(@event) %>
+                  <% if @event.registration_deadline > Time.current %>
+                    <% student_event = Current.user.student_events.find_by(event: @event) %>
+                    <%= button_to event_student_event_path(@event, student_event),
+                          method: :delete,
+                          class: "btn btn-outline-warning d-inline-flex align-items-center",
+                          title: "取消报名",
+                          form: { data: { action: "cancel-registration" } } do %>
+                      <i class="bi bi-person-dash align-middle me-1"></i><span>取消</span>
+                    <% end %>
+                  <% else %>
+                    <button type="button" 
+                            class="btn btn-outline-success d-inline-flex align-items-center" disabled>
+                      <i class="bi bi-person-check align-middle me-1"></i><span>已报名</span>
+                    </button>
+                  <% end %>
+                <% else %>
+                  <%= button_to event_student_events_path(@event),
+                        method: :post,
+                        class: "btn btn-outline-success d-inline-flex align-items-center",
+                        title: "报名活动",
+                        form: { data: { action: "register-event" } } do %>
+                    <i class="bi bi-person-plus align-middle me-1"></i><span>报名</span>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+            
+            <div class="btn-group">
+              <% if @event.pending? && Current.user.admin? %>
+                <%= button_to update_status_event_path(@event, status: 'upcoming'),
+                      method: :patch,
+                      class: "btn btn-success",
+                      form: { data: { action: "approve-event" } } do %>
+                  <i class="bi bi-check-circle me-1"></i>审核通过
+                <% end %>
+              <% end %>
+              <% unless @event.canceled? %>
+                <%= button_to update_status_event_path(@event, status: 'canceled'),
+                      method: :patch,
+                      class: "btn btn-outline-danger",
+                      form: { data: { action: "cancel-event" } } do %>
+                  <i class="bi bi-x-circle me-1"></i>取消活动
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <%= f.submit '关联教师'%>
-  <% end %>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-action="delete-event"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要删除此活动吗？')) {
+        fetch(form.action, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.href = data.redirect_url
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message || '删除失败',
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误，请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="approve-event"], [data-action="cancel-event"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      const isApprove = form.dataset.action === 'approve-event'
+      
+      if (confirm(`确定要${isApprove ? '通过' : '取消'}此活动吗？`)) {
+        fetch(form.action, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message || '审核失败',
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误，请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="register-event"], [data-action="cancel-registration"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      const method = form.dataset.action === 'register-event' ? 'POST' : 'DELETE'
+      
+      fetch(form.action, {
+        method: method,
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1000
+          })
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(error => {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      })
+    })
+  })
+
+  document.querySelectorAll('[data-action="add-teacher"]').forEach(form => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const formData = new FormData(form)
+      
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1500
+          })
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            delay: 3000
+          })
+        }
+      })
+    })
+  })
+
+  document.querySelectorAll('[data-action="remove-teacher"]').forEach(form => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      if (confirm('确定要移除此教师吗？')) {
+        fetch(form.action, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              delay: 3000
+            })
+          }
+        })
+      }
+    })
+  })
+})
+</script>
 <% end %>
-
-<hr>
-
-<h2>志愿者岗位</h2>
-
-<% if user_signed_in? && (current_user.admin? || current_user == @event.organizer_teacher) %>
-  <%= link_to '创建新志愿者岗位', new_event_volunteer_position_path(@event) %>
-<% end %>
-
-<table>
-  <thead>
-    <tr>
-      <th>岗位名称</th>
-      <th>描述</th>
-      <th>需求人数</th>
-      <th>志愿时长</th>
-      <th>报名截止时间</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @event.volunteer_positions.each do |position| %>
-      <tr>
-        <td><%= link_to position.name, event_volunteer_position_path(@event, position) %></td>
-        <td><%= truncate(position.description, length: 50) %></td>
-        <td><%= position.required_number %></td>
-        <td><%= position.volunteer_hours %> 小时</td>
-        <td><%= format_datetime(position.registration_deadline) %></td>
-        <td>
-          <%= link_to '查看', event_volunteer_position_path(@event, position) %>
-          <% if current_user.admin? || (current_user.teacher? && position.event.organizer_teacher == current_user) %>
-            <%= link_to '编辑', edit_event_volunteer_position_path(@event, position) %>
-            <%= link_to '删除', event_volunteer_position_path(@event, position), data: { turbo_method: :delete, turbo_confirm: "确定要删除岗位 #{position.name} 吗？" } %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<hr>
-
-<% if user_signed_in? %>
-  <% if current_user.admin? || @event.organizer_teacher == current_user %>
-    <%= link_to '编辑活动', edit_event_path(@event) %>
-    <%= link_to '删除活动', event_path(@event), data: {
-      turbo_method: :delete,
-      turbo_confirm: "确定要删除活动 #{@event.title} 吗？"
-    } %>
-  <% else %>
-    <% if current_user.registered_events.include?(@event) %>
-      <%= button_to '取消报名', event_student_event_path(@event, current_user.student_events.find_by(event: @event)), method: :delete %>
-    <% elsif @event.status == 'upcoming' %>
-      <%= button_to '报名参加', event_student_events_path(@event), method: :post %>
-    <% else %>
-      <p>报名已满或活动不允许报名。</p>
-    <% end %>
-  <% end %>
-<% end %>
-
-<%= link_to '返回活动列表', events_path %>

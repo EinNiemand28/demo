@@ -16,6 +16,21 @@
             <i class="bi bi-house-door me-1"></i>首页
           <% end %>
         </li>
+        <li class="nav-item">
+          <%= link_to events_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'events'}" do %>
+            <i class="bi bi-grid me-1"></i>所有活动
+          <% end %>
+        </li>
+
+        <% if Current.user %>
+          <% if Current.user.admin? %>
+            <li class="nav-item">
+              <%= link_to users_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'users'}" do %>
+                <i class="bi bi-people me-1"></i>用户管理
+              <% end %>
+            </li>
+          <% end %>
+        <% end %>
       </ul>
 
       <ul class="navbar-nav align-items-center">

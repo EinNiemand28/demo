@@ -2,7 +2,7 @@ class Event < ApplicationRecord
   enum :status, { :pending => 0, :upcoming => 1, :ongoing => 2, :finished => 3, :canceled => 4 }
   validate :valid_status_transition, if: :status_changed?
 
-  belongs_to :organizer_teacher, class_name: "User", foreign_key: "organizer_teacher_id"
+  belongs_to :organizing_teacher, class_name: "User", foreign_key: "organizing_teacher_id"
   
   validates :title, presence: true, length: { maximum: 100 }
   validates :description, presence: true
@@ -11,23 +11,36 @@ class Event < ApplicationRecord
   validates :location, presence: true
   validates :status, presence: true
   validates :registration_deadline, presence: true
-  validates :max_participants, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :max_participants, numericality: { only_integer: true, greater_than: 0 }
 
   validate :start_time_before_end_time
   validate :registration_deadline_before_start_time
+
   validate :max_participants_not_less_than_registered
 
   has_many :teacher_events, foreign_key: "event_id", dependent: :destroy
   has_many :teachers, through: :teacher_events, source: :user
   has_many :student_events, foreign_key: "event_id", dependent: :destroy
-  has_many :participants, -> { where(student_events: { status: :registered }) }, through: :student_events, source: :user
+  has_many :participants, through: :student_events, source: :user
 
-  has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
+  # has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
   # has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
   
-  has_many :feedbacks, dependent: :destroy
+  # has_many :feedbacks, dependent: :destroy
 
-  after_update :notify_changes
+  # after_update :notify_changes
+
+  def finished?
+    status.to_sym == :finished
+  end
+
+  def canceled?
+    status.to_sym == :canceled
+  end
+
+  def can_delete?
+    finished? || canceled?
+  end
 
   private
 

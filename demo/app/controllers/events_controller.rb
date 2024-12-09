@@ -1,98 +1,127 @@
 class EventsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_event, only: %i[ show edit update destroy approve cancel]
-  before_action :authorize_user!, only: %i[edit update destroy approve cancel]
+  before_action :authenticate
+  before_action :set_event, except: [:index, :new, :create]
+  before_action :authorize, only: [:edit, :update, :destroy]
 
-  # GET /events or /events.json
   def index
-    @events = Event.where(status: [:upcoming, :ongoing, :finished, :canceled])
-    @pending_events = Event.where(status: :pending).order(start_time: :asc)
-    @registered_events = current_user.registered_events if current_user.student?
-    @associated_events = current_user.associated_events if current_user.teacher?
-    @organized_events = current_user.organized_events if current_user.teacher?
+    @events = Event.all
+    
+    if params[:status].present?
+      @events = @events.where(status: params[:status])
+    end
+
+    @events = @events.order(created_at: :desc).page(params[:page]).per(10)
   end
 
-  # GET /events/1 or /events/1.json
+  def new
+    @event = Event.new
+  end
+
   def show
   end
 
-  # GET /events/new
-  def new
-    @event = current_user.organized_events.build
-  end
-
-  # GET /events/1/edit
   def edit
   end
 
-  # POST /events or /events.json
   def create
-    @event = current_user.organized_events.build(event_params)
+    @event = Current.user.organized_events.build(event_params)
     @event.status = :pending
 
-    respond_to do |format|
-      if @event.save
-        format.html { redirect_to @event, notice: "活动已申请，等待审核。" }
-        format.json { render :show, status: :created, location: @event }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @event.errors, status: :unprocessable_entity }
-      end
+    if @event.save
+      render json: {
+        success: true,
+        message: t('messages.success.event.create'),
+        redirect_url: events_path
+      }
+    else
+      render json: {
+        success: false,
+        message: t('messages.error.event.create'),
+        errors: @event.errors.full_messages
+      }, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /events/1 or /events/1.json
   def update
-    respond_to do |format|
-      if @event.update(event_params)
-        format.html { redirect_to @event, notice: "活动已更新。" }
-        format.json { render :show, status: :ok, location: @event }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @event.errors, status: :unprocessable_entity }
-      end
+    if @event.update(event_params)
+      render json: {
+        success: true,
+        message: t('messages.success.event.update'),
+        redirect_url: event_path(@event)
+      }
+    else
+      render json: {
+        success: false,
+        message: t('messages.error.event.update'),
+        errors: @event.errors.full_messages
+      }, status: :unprocessable_entity
     end
   end
 
-  # DELETE /events/1 or /events/1.json
   def destroy
-    @event.destroy
-    redirect_to events_url, notice: '活动已删除。'
-  end
-
-  def approve
-    if current_user.admin?
-      NotificationService.notify_event_approved(@event)
-      @event.update(status: :upcoming)
-      redirect_to @event, notice: '活动已通过审核。'
+    if @event.destroy
+      render json: {
+        success: true,
+        message: t('messages.success.event.delete'),
+        redirect_url: events_path
+      }
     else
-      redirect_to @event, alert: '您没有权限执行此操作。'
+      render json: {
+        success: false,
+        message: t('messages.error.event.delete')
+      }, status: :unprocessable_entity
     end
   end
 
-  def cancel
-    if current_user.admin? || @event.organizer_teacher == current_user
-      @event.update(status: :canceled)
-      redirect_to @event, notice: '活动已取消。'
+  def update_status
+    if @event.update(status: params[:status])
+      if params[:status] == 'upcoming'
+        # NotificationService.notify_event_approved(@event)
+      end
+      render json: {
+        success: true,
+        message: t("messages.success.event.#{params[:status]}")
+      }
     else
-      redirect_to @event, alert: '您没有权限执行此操作。'
+      render json: {
+        success: false,
+        message: t('messages.error.event.update_status'),
+        errors: @event.errors.full_messages
+      }, status: :unprocessable_entity
     end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
     def set_event
       @event = Event.find(params[:id])
     end
 
-    def authorize_user!
-      unless current_user.admin? || @event.organizer_teacher == current_user
-        redirect_to events_path, alert: '您没有权限访问此页面。'
+    def authorize
+      unless Current.user.admin? || @event.organizer_teacher == Current.user
+        respond_to do |format|
+          format.json {
+            render json: {
+              success: false,
+              message: t('messages.error.unauthorized')
+            }, status: :unauthorized
+          }
+          format.html {
+            redirect_to root_path, notice: t('messages.error.unauthorized')
+          }
+        end
       end
     end
 
-    # Only allow a list of trusted parameters through.
     def event_params
       params.require(:event).permit(:title, :description, :start_time, :end_time, :location, :status, :registration_deadline, :max_participants)
+    end
+
+    def ensure_can_delete
+      unless @event.can_delete?
+        render json: {
+          success: false,
+          message: t('messages.error.event.delete'),
+        }, status: :unprocessable_entity
+      end
     end
 end

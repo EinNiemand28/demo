@@ -17,6 +17,12 @@ zh-CN:
         student: "学生"
         teacher: "老师"
         admin: "管理员"
+      event:
+        pending: "待审核"
+        upcoming: "即将开始"
+        ongoing: "进行中"
+        finished: "已结束"
+        canceled: "已取消"
     errors:
       models:
         user:
@@ -39,6 +45,28 @@ zh-CN:
               confirmation: "两次输入的密码不一致"
             base:
               email_or_phone_required: "邮箱和手机号码至少填写一个"
+        event:
+          attributes:
+            title:
+              blank: "活动名称不能为空"
+              too_long: "活动名称不能超过%{count}个字符"
+            description:
+              blank: "活动描述不能为空"
+            start_time:
+              blank: "开始时间不能为空"
+            end_time:
+              blank: "结束时间不能为空"
+            location:
+              blank: "活动地点不能为空"
+            registration_deadline:
+              blank: "报名截止时间不能为空"
+            max_participants:
+              not_a_number: "参与人数必须为数字"
+              greater_than: "参与人数必须大于%{count}"
+            base:
+              start_time_before_end_time: "开始时间必须早于结束时间"
+              registration_deadline_before_start_time: "报名截止时间必须早于开始时间"
+              max_participants_not_less_than_registered: "最大参与人数不能少于已报名人数"
 
   views:
     pagination:
@@ -56,7 +84,22 @@ zh-CN:
         logout: "已成功登出"
         update: "个人资料已更新"
         password_update: "密码修改成功!"
+        role_update: "权限修改成功!"
         delete: "账号已注销"
+      event:
+        create: "活动创建成功"
+        update: "活动更新成功"
+        delete: "活动已删除"
+        upcoming: "活动已审核通过"
+        ongoing: "活动状态已更新为进行中"
+        finished: "活动状态已更新为已结束"
+        canceled: "活动已取消"
+      student_event:
+        create: "报名成功"
+        delete: "取消报名成功"
+      teacher_event:
+        create: "教师关联成功"
+        delete: "教师取消关联成功"
     error:
       unauthorized: "您没有权限执行此操作"
       user:
@@ -65,4 +108,16 @@ zh-CN:
         update: "个人资料更新失败"
         password_wrong: "原密码错误"
         password_update: "密码修改失败"
+        role_update: "权限修改失败"
         delete: "账号注销失败"
+      event:
+        create: "活动创建失败"
+        update: "活动更新失败"
+        delete: "活动删除失败"
+        update_status: "活动状态更新失败"
+      student_event:
+        create: "报名失败"
+        delete: "取消报名失败"
+      teacher_event:
+        create: "教师关联失败"
+        delete: "教师取消关联失败"

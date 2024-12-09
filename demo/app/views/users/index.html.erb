@@ -1,57 +1,213 @@
-<h1>用户列表</h1>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-people me-2"></i>用户管理
+        </h4>
+        
+        <div class="d-flex gap-2 align-items-center">
+          <div class="btn-group me-3" role="group">
+            <%= link_to "全部", users_path, 
+                  class: "btn btn-outline-secondary #{params[:role].blank? ? 'active' : ''}" %>
+            <% User.roles.keys.each do |role| %>
+              <%= link_to user_role(role), users_path(role: role),
+                    class: "btn btn-outline-#{role == 'admin' ? 'danger' : (role == 'teacher' ? 'warning' : 'primary')} #{params[:role] == role ? 'active' : ''}" %>
+            <% end %>
+          </div>
 
-<%= search_form_for @q, url: users_path, method: :get do |f| %>
-  <div class="field">
-    <%= f.label :name_cont, "按姓名搜索" %>
-    <%= f.text_field :name_cont %>
+          <%= form_with(url: users_path, method: :get, class: "d-flex") do |f| %>
+            <%= f.hidden_field :role, value: params[:role] if params[:role].present? %>
+            <div class="input-group input-group-lg shadow-sm">
+              <%= f.search_field :query, 
+                    value: params[:query],
+                    class: "form-control",
+                    placeholder: "搜索用户名/邮箱/手机",
+                    style: "border-top-right-radius: 0; border-bottom-right-radius: 0;" %>
+              <button class="btn btn-primary px-4" type="submit">
+                <i class="bi bi-search me-1"></i>搜索
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>用户信息</th>
+              <th>账号类型</th>
+              <th>邮箱</th>
+              <th>手机</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @users.each do |user| %>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <%= image_tag user.avatar_thumbnail,
+                          class: "rounded-circle me-3",
+                          style: "width: 40px; height: 40px; object-fit: cover;" %>
+                    <div>
+                      <div class="fw-bold"><%= user.username %></div>
+                      <div class="text-muted small">ID: <%= user.id %></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <% if Current.user.admin? && !user.admin? %>
+                    <div class="btn-group" role="group">
+                      <% User.roles.keys.each do |role| %>
+                        <% unless role == 'admin' %>
+                          <button type="button"
+                                  class="btn btn-sm <%= user.role == role ? 'btn-' : 'btn-outline-' %><%= role == 'teacher' ? 'warning' : 'primary' %>"
+                                  <%= 'disabled' if user.role == role %>
+                                  data-action="change-role"
+                                  data-role="<%= role %>"
+                                  data-user-id="<%= user.id %>">
+                            <%= user_role(role) %>
+                          </button>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="badge bg-<%= user.admin? ? 'danger' : (user.teacher? ? 'warning' : 'primary') %>">
+                      <%= user_role(user.role) %>
+                    </span>
+                  <% end %>
+                </td>
+                <td><%= user.email %></td>
+                <td><%= user.phone %></td>
+                <td>
+                  <div class="btn-group">
+                    <%= link_to user_path(user), class: "btn btn-sm btn-outline-secondary" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <%= link_to edit_user_path(user), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                    <button type="button" 
+                            class="btn btn-sm btn-outline-danger"
+                            data-action="delete-user"
+                            data-user-id="<%= user.id %>">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <% if @users.respond_to?(:total_pages) %>
+        <div class="d-flex justify-content-center mt-4">
+          <%= paginate @users %>
+        </div>
+      <% end %>
+    </div>
   </div>
-  <div class="field">
-    <%= f.label :email_cont, "按邮箱搜索" %>
-    <%= f.text_field :email_cont %>
-  </div>
-  <div class="field">
-    <%= f.label :telephone_cont, "按电话搜索" %>
-    <%= f.text_field :telephone_cont %>
-  </div>
-  <div class="field">
-    <%= f.label :role_level_eq, "按权限过滤" %>
-    <%= f.select :role_level_eq, User.role_levels.map { |key, value| [key.humanize, value] }, { include_blank: "所有权限" } %>
-  </div>
-  <div class="actions">
-    <%= f.submit "搜索" %>
-  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-action="change-role"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const role = e.target.dataset.role
+      const userId = e.target.dataset.userId
+      const currentRole = e.target.textContent.trim()
+      
+      if (confirm(`确定要将用户权限更改为${currentRole}吗? `)) {
+        fetch(`/users/${userId}/toggle_role`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ role: role })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok')
+          }
+          return response.json()
+        })
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1000
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          // console.error('Error details:', error);
+          showToast({
+            message: '系统错误, 请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="delete-user"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const userId = e.target.closest('[data-action="delete-user"]').dataset.userId
+      
+      if (confirm('确定要删除此用户吗? ')) {
+        fetch(`/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1000
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误, 请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+})
+</script>
 <% end %>
-
-<h2>所有用户</h2>
-<table>
-  <thead>
-    <tr>
-      <th>姓名</th>
-      <th>邮箱</th>
-      <th>电话</th>
-      <th>角色</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% @users.each do |user| %>
-      <tr>
-        <td><%= link_to user.name, user_path(user) %></td>
-        <td><%= user.email %></td>
-        <td><%= user.telephone %></td>
-        <td><%= user.role_level.humanize %></td>
-        <td>
-          <%= link_to '查看', user_path(user) %> |
-          <%= link_to '编辑', edit_user_path(user) %> |
-          <%= link_to '删除', user_path(user), data: {
-            turbo_method: :delete,
-            turbo_confirm: "确定要删除用户 #{user.name} 吗？"
-          } %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<%= paginate @users %>

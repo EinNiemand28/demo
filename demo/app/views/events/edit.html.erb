@@ -1,3 +1,15 @@
-<h1>编辑活动</h1>
-
-<%= render 'form', event: @event %>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-5">
+          <h4 class="card-title text-center mb-4">
+            <i class="bi bi-pencil-square me-2"></i>编辑活动
+          </h4>
+          
+          <%= render 'form', event: @event %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

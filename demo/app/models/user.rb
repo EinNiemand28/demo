@@ -32,6 +32,14 @@ class User < ApplicationRecord
   enum :role, { :student => 0, :teacher => 1, :admin => 2 }
   after_initialize :set_default_role, if: :new_record?
 
+  has_many :teacher_events, dependent: :destroy
+  has_many :organized_events, class_name: "Event", foreign_key: "organizing_teacher_id", dependent: :nullify
+  has_many :assisted_events, through: :teacher_events, source: :event
+
+  has_many :student_events, dependent: :destroy
+  has_many :participated_events, through: :student_events, source: :event
+
+
   has_one_attached :avatar do |attachable|
     attachable.variant :thumb, resize_to_fill: [150, 150]
   end

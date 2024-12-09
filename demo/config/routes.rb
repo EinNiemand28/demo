@@ -13,8 +13,7 @@ Rails.application.routes.draw do
 
   resources :events do
     member do
-      patch :approve
-      patch :cancel
+      patch :update_status
     end
     resources :student_events, only: [:create, :destroy]
     resources :teacher_events, only: [:create, :destroy]
@@ -32,7 +31,7 @@ Rails.application.routes.draw do
   resources :users, only: [:index, :show, :edit, :update, :destroy] do
     member do
       # delete "reset_avatar", to: "users#reset_avatar", as: :reset_avatar
-      patch "toggle_role", to: "users#toggle_role", as: :toggle_role
+      patch :toggle_role
     end
   end
 
