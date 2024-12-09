@@ -23,8 +23,8 @@ class Event < ApplicationRecord
   has_many :student_events, foreign_key: "event_id", dependent: :destroy
   has_many :participants, through: :student_events, source: :user
 
-  # has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
-  # has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
+  has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
+  has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
   
   # has_many :feedbacks, dependent: :destroy
 

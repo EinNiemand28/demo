@@ -1,81 +1,115 @@
 class StudentVolunteerPositionsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate
   before_action :set_volunteer_position
-  before_action :authorize_user!, only: [:approve]
+  before_action :authorize, only: [:approve]
 
   def create
-    unless current_user.student?
-      redirect_back_with_alert('只有学生可以报名志愿者岗位。') and return
+    unless Current.user.student?
+      render json: {
+        success: false,
+        message: "只有学生可以申请志愿者岗位。"
+      }, status: :unauthorized and return
     end
     unless @volunteer_position.registration_deadline >= Time.current
-      redirect_back_with_alert('报名已截止。') and return
+      render json: {
+        success: false,
+        message: "报名已截止。"
+      }, status: :forbidden and return
     end
     unless @volunteer_position.required_number > @volunteer_position.volunteers.count
-      redirect_back_with_alert('报名人数已满。') and return
+      render json: {
+        success: false,
+        message: "人数已满。"
+      }, status: :forbidden and return
     end
 
-    @student_volunteer_position = current_user.student_volunteer_positions.find_by(volunteer_position: @volunteer_position)
+    @student_volunteer_position = Current.user.student_volunteer_positions.find_by(volunteer_position: @volunteer_position)
     if @student_volunteer_position&.pending?
-      redirect_back_with_alert('您已提交申请，请等待审核。')
+      render json: {
+        success: false,
+        message: "您已经提交过申请。"
+      }, status: :forbidden and return
     elsif @student_volunteer_position&.approved?
-      redirect_back_with_alert('您已经是志愿者。')
+      render json: {
+        success: false,
+        message: "您已经通过审核。"
+      }, status: :forbidden and return
     else
       if @student_volunteer_position.nil?
-        @student_volunteer_position = current_user.student_volunteer_positions.build(
+        @student_volunteer_position = Current.user.student_volunteer_positions.build(
           volunteer_position: @volunteer_position,
           status: :pending,
-          registration_time: Time.current
         )
       else
         @student_volunteer_position.status = :pending
-        @student_volunteer_position.registration_time = Time.current
       end
-      @student_volunteer_position.save
-      redirect_back_with_notice('已提交申请。')
+      if @student_volunteer_position.save
+        render json: {
+          success: true,
+          message: t('messages.success.student_volunteer_position.create')
+        }
+      else
+        render json: {
+          success: false,
+          message: t('messages.error.student_volunteer_position.create'),
+          errors: @student_volunteer_position.errors.full_messages
+        }, status: :unprocessable_entity
+      end
     end
   end
 
   def approve
     unless @volunteer_position.required_number > @volunteer_position.volunteers.count
-      redirect_back_with_alert('报名人数已满。') and return
+      render json: {
+        success: false,
+        message: "人数已满。"
+      }, status: :forbidden and return
     end
 
     @student_volunteer_position = @volunteer_position.student_volunteer_positions.find_by(params[:registration_id])
     if @student_volunteer_position.update(status: :approved)
-      NotificationService.notify_volunteer_approved(@student_volunteer_position)
-      redirect_back_with_notice('审核成功。')
+      # NotificationService.notify_volunteer_approved(@student_volunteer_position)
+      render json: {
+        success: true,
+        message: t('messages.success.student_volunteer_position.approve')
+      }
     else
-      redirect_back_with_alert('审核失败。')
+      render json: {
+        success: false,
+        message: t('messages.error.student_volunteer_position.approve'),
+        errors: @student_volunteer_position.errors.full_messages
+      }, status: :unprocessable_entity
     end
   end
 
   def cancel
-    @student_volunteer_position = current_user.student_volunteer_positions.find_by(volunteer_position: @volunteer_position)
+    @student_volunteer_position = Current.user.student_volunteer_positions.find_by(volunteer_position: @volunteer_position)
     if @student_volunteer_position.update(status: :canceled)
-      redirect_back_with_notice('取消申请成功。')
+      render json: {
+        success: true,
+        message: t('messages.success.student_volunteer_position.cancel')
+      }
     else
-      redirect_back_with_alert('取消申请失败。')
+      render json: {
+        success: false,
+        message: t('messages.error.student_volunteer_position.cancel'),
+        errors: @student_volunteer_position.errors.full_messages
+      }, status: :unprocessable_entity
     end
   end
 
   private
-
-  def redirect_back_with_notice(message)
-    redirect_to event_volunteer_position_path(@event, @volunteer_position), notice: message
-  end
-
-  def redirect_back_with_alert(message)
-    redirect_to event_volunteer_position_path(@event, @volunteer_position), alert: message
-  end
-
   def set_volunteer_position
     @event = Event.find(params[:event_id])
     @volunteer_position = @event.volunteer_positions.find(params[:id])
   end
 
-  def authorize_user!
-    unless current_user.admin? || @volunteer_position.event.organizer_teacher == current_user
-      redirect_to @volunteer_position, alert: '您没有权限执行此操作。'
+  def authorize
+    unless Current.user.admin? || @volunteer_position.event.organizer_teacher == Current.user
+      render json: {
+        success: false,
+        message: t('messages.error.unauthorized')
+      }, status: :unauthorized and return
     end
   end
 end

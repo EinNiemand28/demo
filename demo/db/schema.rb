@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_09_134826) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_09_191333) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -78,6 +78,17 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_09_134826) do
     t.index ["user_id"], name: "index_student_events_on_user_id"
   end
 
+  create_table "student_volunteer_positions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "volunteer_position_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "volunteer_position_id"], name: "idx_on_user_id_volunteer_position_id_356656925a", unique: true
+    t.index ["user_id"], name: "index_student_volunteer_positions_on_user_id"
+    t.index ["volunteer_position_id"], name: "index_student_volunteer_positions_on_volunteer_position_id"
+  end
+
   create_table "teacher_events", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "event_id", null: false
@@ -103,12 +114,29 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_09_134826) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  create_table "volunteer_positions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "event_id", null: false
+    t.string "name", limit: 100, null: false
+    t.text "description", null: false
+    t.integer "required_number", null: false
+    t.float "volunteer_hours", null: false
+    t.datetime "registration_deadline", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id", "name"], name: "index_volunteer_positions_on_event_id_and_name", unique: true
+    t.index ["event_id"], name: "index_volunteer_positions_on_event_id"
+    t.index ["registration_deadline"], name: "index_volunteer_positions_on_registration_deadline"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "events", "users", column: "organizing_teacher_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "student_events", "events"
   add_foreign_key "student_events", "users"
+  add_foreign_key "student_volunteer_positions", "users"
+  add_foreign_key "student_volunteer_positions", "volunteer_positions"
   add_foreign_key "teacher_events", "events"
   add_foreign_key "teacher_events", "users"
+  add_foreign_key "volunteer_positions", "events"
 end

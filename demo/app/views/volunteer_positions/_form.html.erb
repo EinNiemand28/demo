@@ -1,43 +1,136 @@
-<%= form_with(model: [event, volunteer_position], local: true) do |f| %>
-  <% if volunteer_position.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(volunteer_position.errors.count, "错误") %> 阻止岗位被保存：</h2>
-      <ul>
-        <% volunteer_position.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
+<%= form_with(model: [event, volunteer_position], 
+      data: { turbo: false }, 
+      class: "needs-validation") do |f| %>
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="form-floating">
+        <%= f.text_field :name, 
+              class: "form-control",
+              required: true,
+              placeholder: "岗位名称" %>
+        <%= f.label :name, class: "text-muted" do %>
+          <i class="bi bi-bookmark me-1"></i>岗位名称
         <% end %>
-      </ul>
+      </div>
     </div>
-  <% end %>
 
-  <div class="field">
-    <%= f.label :name %><br />
-    <%= f.text_field :name %>
-  </div>
+    <div class="col-12">
+      <div class="form-floating">
+        <%= f.text_area :description, 
+              class: "form-control",
+              style: "height: 120px",
+              required: true,
+              placeholder: "岗位描述" %>
+        <%= f.label :description, class: "text-muted" do %>
+          <i class="bi bi-file-text me-1"></i>岗位描述
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :description %><br />
-    <%= f.text_area :description %>
-  </div>
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= f.number_field :required_number, 
+              class: "form-control",
+              min: 1,
+              required: true,
+              placeholder: "需求人数" %>
+        <%= f.label :required_number, class: "text-muted" do %>
+          <i class="bi bi-people me-1"></i>需求人数
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :required_number %>
-    <%= f.number_field :required_number, min: 0 %>
-  </div>
+    <div class="col-md-6">
+      <div class="form-floating">
+        <%= f.number_field :volunteer_hours, 
+              class: "form-control",
+              min: 0.1,
+              step: 0.1,
+              required: true,
+              placeholder: "志愿时长" %>
+        <%= f.label :volunteer_hours, class: "text-muted" do %>
+          <i class="bi bi-clock-history me-1"></i>志愿时长
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :volunteer_hours %>
-    <%= f.number_field :volunteer_hours, step: 0.1, min: 0 %>
-  </div>
+    <div class="col-12">
+      <div class="form-floating">
+        <%= f.datetime_local_field :registration_deadline, 
+              class: "form-control",
+              required: true,
+              placeholder: "报名截止时间" %>
+        <%= f.label :registration_deadline, class: "text-muted" do %>
+          <i class="bi bi-calendar-check me-1"></i>报名截止时间
+        <% end %>
+      </div>
+    </div>
 
-  <div class="field">
-    <%= f.label :registration_deadline %><br />
-    <%= f.datetime_select :registration_deadline %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit '保存'%>
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <%= link_to event_path(event), class: "btn btn-outline-secondary" do %>
+          <i class="bi bi-arrow-left me-1"></i>返回
+        <% end %>
+        <%= f.button class: "btn btn-primary" do %>
+          <i class="bi bi-check-lg me-1"></i>保存
+        <% end %>
+      </div>
+    </div>
   </div>
 <% end %>
 
-<%= link_to '返回活动', event_path(event) %>
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form.needs-validation')
+
+  if (form) {
+    form.onsubmit = async (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      try {
+        const formData = new FormData(form)
+
+        const methodInput = form.querySelector('input[name="_method"]')
+        const method = methodInput ? methodInput.value.toUpperCase() : 'POST'
+
+        const response = await fetch(form.action, {
+          method: method,
+          headers: {
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: formData
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            redirect: data.redirect_url,
+            delay: 1500
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      } catch (error) {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      }
+
+      return false
+    }
+  }
+})
+</script>
+<% end %>

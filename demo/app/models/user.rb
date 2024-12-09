@@ -39,6 +39,10 @@ class User < ApplicationRecord
   has_many :student_events, dependent: :destroy
   has_many :participated_events, through: :student_events, source: :event
 
+  has_many :student_volunteer_positions, dependent: :destroy
+  has_many :registered_volunteer_positions, -> { where(student_volunteer_positions: { status: :approved }) }, source: :volunteer_position, through: :student_volunteer_positions
+  # has_many :approved_volunteer_positions, -> { where(student_volunteer_positions: { status: :approved }) }, source: :volunteer_position, through: :student_volunteer_positions
+
 
   has_one_attached :avatar do |attachable|
     attachable.variant :thumb, resize_to_fill: [150, 150]

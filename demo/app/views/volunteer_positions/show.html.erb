@@ -1,78 +1,330 @@
-<h1><%= @volunteer_position.name %></h1>
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h4 class="card-title mb-3"><%= @volunteer_position.name %></h4>
+          
+          <div class="list-group list-group-flush">
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-people me-2"></i>报名人数</span>
+              <span class="badge bg-info">
+                <%= @volunteer_position.volunteers.count %>/<%= @volunteer_position.required_number %>
+              </span>
+            </div>
+            
+            <div class="list-group-item">
+              <div><i class="bi bi-clock me-2"></i>志愿时长</div>
+              <div class="ms-4 text-muted"><%= @volunteer_position.volunteer_hours %> 小时</div>
+            </div>
+            
+            <div class="list-group-item">
+              <div><i class="bi bi-calendar-event me-2"></i>报名截止</div>
+              <div class="ms-4 text-muted"><%= l @volunteer_position.registration_deadline, format: :long %></div>
+            </div>
+            
+            <div class="list-group-item">
+              <div><i class="bi bi-bookmark me-2"></i>所属活动</div>
+              <div class="ms-4">
+                <%= link_to @event.title, event_path(@event), class: "text-decoration-none" %>
+              </div>
+            </div>
+          </div>
 
-<p><strong>描述:</strong> <%= @volunteer_position.description %></p>
-<p><strong>已有人数 / 需求人数:</strong> <%= @volunteer_position.volunteers.count %> / <%= @volunteer_position.required_number %></p>
-<p><strong>志愿时长:</strong> <%= @volunteer_position.volunteer_hours %> 小时</p>
-<p><strong>报名截止时间:</strong> <%= format_datetime(@volunteer_position.registration_deadline) %></p>
-<p><strong>活动:</strong> <%= link_to @event.title, event_path(@event) %></p>
-
-<hr>
-<% if user_signed_in? && (current_user.admin? || current_user.teacher?) %>
-  <h2>志愿者申请列表</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>学生姓名</th>
-        <th>联系方式</th>
-        <th>报名时间</th>
-        <th>状态</th>
-        <% if current_user.admin? || @event.organizer_teacher == current_user %>
-          <th>操作</th>
-        <% end %>
-      </tr>
-    </thead>
-    <tbody>
-      <% @volunteer_position.student_volunteer_positions.each do |registration| %>
-        <tr>
-          <td><%= link_to registration.user.name, user_path(registration.user) %></td>
-          <td><%= registration.user.contact_info %></td>
-          <td><%= format_datetime(registration.registration_time) %></td>
-          <td><%= registration.status.humanize %></td>
-          <% if current_user.admin? || @event.organizer_teacher == current_user %>
-            <td>
-              <% if registration.pending? %>
-                <%= link_to '批准', approve_event_volunteer_position_path(@event, @volunteer_position, registration_id: registration.id), data: {
-                  turbo_method: :patch,
-                  turbo_confirm: "确定要批准学生 #{registration.user.name} 的申请吗？"
-                } %>
+          <div class="mt-4">
+            <% if Current.user&.student? %>
+              <% if @event.upcoming? %>
+                <% if Current.user.registered_volunteer_positions.include?(@volunteer_position) %>
+                  <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>您已成功报名该岗位
+                  </div>
+                  <%= button_to cancel_event_volunteer_position_path(@event, @volunteer_position),
+                        method: :patch,
+                        class: "btn btn-outline-danger w-100",
+                        data: { action: "cancel-application" } do %>
+                    <i class="bi bi-x-circle me-1"></i>取消申请
+                  <% end %>
+                <% elsif Current.user.student_volunteer_positions.exists?(volunteer_position: @volunteer_position, status: :pending) %>
+                  <div class="alert alert-warning">
+                    <i class="bi bi-hourglass me-2"></i>等待审核中
+                  </div>
+                  <%= button_to cancel_event_volunteer_position_path(@event, @volunteer_position),
+                        method: :patch,
+                        class: "btn btn-outline-danger w-100",
+                        data: { action: "cancel-application" } do %>
+                    <i class="bi bi-x-circle me-1"></i>取消申请
+                  <% end %>
+                <% else %>
+                  <%= button_to apply_event_volunteer_position_path(@event, @volunteer_position),
+                        method: :post,
+                        class: "btn btn-primary w-100",
+                        data: { action: "apply-position" } do %>
+                    <i class="bi bi-person-plus me-1"></i>报名申请
+                  <% end %>
+                <% end %>
+              <% else %>
+                <div class="alert alert-secondary">
+                  <i class="bi bi-info-circle me-2"></i>申请已结束或未开放
+                </div>
               <% end %>
-            </td>
-          <% end %>
-        </tr>
+            <% end %>
+
+            <% if Current.user&.admin? || @volunteer_position.event.organizing_teacher == Current.user %>
+              <div class="btn-group w-100">
+                <%= link_to edit_event_volunteer_position_path(@event, @volunteer_position),
+                      class: "btn btn-outline-primary" do %>
+                  <i class="bi bi-pencil me-1"></i>编辑
+                <% end %>
+                <%= button_to event_volunteer_position_path(@event, @volunteer_position),
+                      method: :delete,
+                      class: "btn btn-outline-danger",
+                      data: { action: "delete-position" } do %>
+                  <i class="bi bi-trash me-1"></i>删除
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-file-text me-2"></i>岗位描述
+          </h5>
+          <div class="card bg-light">
+            <div class="card-body">
+              <%= simple_format @volunteer_position.description %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <% if Current.user&.admin? || Current.user&.teacher? %>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-3">
+              <i class="bi bi-list-check me-2"></i>申请列表
+            </h5>
+            
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>申请人</th>
+                    <th>联系方式</th>
+                    <th>申请时间</th>
+                    <th>状态</th>
+                    <% if Current.user.admin? || @event.organizing_teacher == Current.user %>
+                      <th>操作</th>
+                    <% end %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @volunteer_position.student_volunteer_positions.each do |registration| %>
+                    <tr>
+                      <td>
+                        <%= link_to registration.user.username, 
+                              user_path(registration.user),
+                              class: "text-decoration-none" %>
+                      </td>
+                      <td><%= registration.user.phone %></td>
+                      <td><%= l registration.created_at, format: :short %></td>
+                      <td>
+                        <span class="badge <%= registration_status_badge_class(registration.status) %>">
+                          <%= registration_status(registration.status) %>
+                        </span>
+                      </td>
+                      <% if Current.user.admin? || @event.organizing_teacher == Current.user %>
+                        <td>
+                          <% if registration.pending? %>
+                            <%= button_to approve_event_volunteer_position_path(@event, @volunteer_position, registration_id: registration.id),
+                                  method: :patch,
+                                  class: "btn btn-sm btn-outline-success",
+                                  data: { action: "approve-application" } do %>
+                              <i class="bi bi-check-lg"></i>
+                            <% end %>
+                          <% end %>
+                        </td>
+                      <% end %>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       <% end %>
-    </tbody>
-  </table>
+    </div>
+  </div>
 
-<hr>
-<% end %>
-
-
-<% if user_signed_in? %>
-  <% if current_user.student? %>
-    <% if @event.status == 'upcoming' %>
-      <% if current_user.registered_volunteer_positions.include?(@volunteer_position) %>
-        您已成功报名该岗位。
-        <%= button_to '取消申请', cancel_event_volunteer_position_path(@event, @volunteer_position), method: :patch, data: {
-          turbo_confirm: "确定要取消申请岗位 #{@volunteer_position.name} 吗？"
-        } %>
-      <% elsif current_user.student_volunteer_positions.exists?(volunteer_position: @volunteer_position, status: :pending) %>
-        您已申请该岗位，等待批准。
-        <%= button_to '取消申请', cancel_event_volunteer_position_path(@event, @volunteer_position), method: :patch, data: {
-          turbo_confirm: "确定要取消申请岗位 #{@volunteer_position.name} 吗？"
-        } %>
-      <% else %>
-        <%= button_to '报名申请', apply_event_volunteer_position_path(@event, @volunteer_position), method: :post %>
-      <% end %>
-    <% else %>
-      <p>申请已结束或未开放。</p>
+  <div class="mt-4">
+    <%= link_to event_volunteer_positions_path(@event), class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left me-1"></i>返回
     <% end %>
-  <% elsif current_user.admin? || @volunteer_position.event.organizer_teacher == current_user %>
-    <%= link_to '编辑', edit_event_volunteer_position_path(@event, @volunteer_position) %>
-    <%= link_to '删除', event_volunteer_position_path(@event, @volunteer_position), data: {
-      turbo_method: :delete,
-      turbo_confirm: "确定要删除岗位 #{@volunteer_position.name} 吗？"
-    } %>
-  <% end %>
-<% end %>
+  </div>
+</div>
 
-<%= link_to "返回活动页面", event_path(@event) %>
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-action="apply-position"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要申请该志愿者岗位吗？')) {
+        fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误，请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="cancel-application"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要取消申请吗？')) {
+        fetch(form.action, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="approve-application"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要通过该申请吗？')) {
+        fetch(form.action, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="delete-position"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm('确定要删除该岗位吗？此操作不可恢复。')) {
+        fetch(form.action, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.href = data.redirect_url
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              errors: data.errors,
+              delay: 3000
+            })
+          }
+        })
+      }
+    })
+  })
+
+})
+</script>
+<% end %>
