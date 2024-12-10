@@ -19,6 +19,12 @@ deploy-demo:
     - cd /demo
     - bundle install
     - rails db:migrate
+    - npm config set registry https://registry.npmmirror.com
+    - yarn config set registry https://registry.npmmirror.com
+    - rm -f yarn.lock
+    - yarn cache clean
+    - yarn install
+    - yarn build
     # - whenever --update-crontab
     - sv restart demo
   only:
