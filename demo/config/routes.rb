@@ -33,6 +33,12 @@ Rails.application.routes.draw do
       # delete "reset_avatar", to: "users#reset_avatar", as: :reset_avatar
       patch :toggle_role
     end
+    member do
+      get :participated_events
+      get :volunteer_positions
+      get :organized_events
+      get :associated_events
+    end
   end
 
   resources :notifications do

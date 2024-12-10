@@ -130,8 +130,8 @@
                               user_path(registration.user),
                               class: "text-decoration-none" %>
                       </td>
-                      <td><%= registration.user.phone %></td>
-                      <td><%= l registration.created_at, format: :short %></td>
+                      <td><%= registration.user.phone || registration.user.email %></td>
+                      <td><%= l registration.updated_at, format: :short %></td>
                       <td>
                         <span class="badge <%= registration_status_badge_class(registration.status) %>">
                           <%= registration_status(registration.status) %>

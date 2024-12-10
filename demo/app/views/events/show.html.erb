@@ -148,6 +148,8 @@
             <% end %>
           </div>
 
+          <%= render "feedbacks/index", event: @event, feedbacks: @feedbacks %>
+
           <div class="d-flex justify-content-between align-items-center">
             <div class="btn-group">
               <%= link_to events_path, class: "btn btn-outline-secondary" do %>

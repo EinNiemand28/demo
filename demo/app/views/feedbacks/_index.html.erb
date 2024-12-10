@@ -1,0 +1,274 @@
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-chat-quote me-2"></i>活动反馈 
+      </h5>
+      
+      <% if event.finished? && event.participants.include?(Current.user) %>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newFeedbackModal">
+          <i class="bi bi-plus-lg me-1"></i>提交反馈
+        </button>
+      <% end %>
+    </div>
+
+    <% if feedbacks.any? %>
+      <div class="list-group list-group-flush">
+        <% feedbacks.each do |feedback| %>
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <% if feedback.is_anonymous %>
+                  <span class="text-muted">匿名用户</span>
+                <% else %>
+                  <%= link_to feedback.user.username, 
+                        user_path(feedback.user), 
+                        class: "text-decoration-none fw-medium" %>
+                <% end %>
+                <small class="text-muted ms-2">
+                  <%= l feedback.updated_at, format: :short %>
+                </small>
+              </div>
+              
+              <div class="d-flex align-items-center gap-3">
+                <div class="text-warning">
+                  <% feedback.rating.times do %>
+                    <i class="bi bi-star-fill"></i>
+                  <% end %>
+                  <% (5 - feedback.rating).times do %>
+                    <i class="bi bi-star"></i>
+                  <% end %>
+                </div>
+                
+                <% if Current.user == feedback.user || Current.user.admin? %>
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" 
+                            class="btn btn-outline-secondary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editFeedbackModal"
+                            data-feedback-id="<%= feedback.id %>">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    
+                    <%= button_to event_feedback_path(event, feedback),
+                          method: :delete,
+                          class: "btn btn-outline-danger",
+                          form: { data: { 
+                            action: "delete-feedback",
+                            feedback_id: feedback.id
+                          } } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            
+            <p class="mb-0" style="text-indent: 0; color: #2c3e50; white-space: pre-line;"><%= feedback.comment %></p>
+          </div>
+        <% end %>
+      </div>
+
+      <% if feedbacks.respond_to?(:total_pages) %>
+        <div class="d-flex justify-content-center mt-4">
+          <%= paginate feedbacks %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-chat-square-text text-muted" style="font-size: 2rem;"></i>
+        <p class="text-muted mt-2 mb-0">暂无反馈</p>
+      </div>
+    <% end %>
+
+    <div class="modal fade" id="newFeedbackModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-chat-quote me-2"></i>提交反馈
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <%= render 'feedbacks/form', event: event, feedback: Feedback.new %>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" data-action="save-feedback">提交</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editFeedbackModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-pencil-square me-2"></i>编辑反馈
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div id="edit-feedback-form-container"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" data-action="update-feedback">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const eventId = '<%= event.id %>'
+  document.querySelector('[data-action="save-feedback"]').addEventListener('click', () => {
+    const form = document.querySelector('#newFeedbackModal form')
+    const formData = new FormData(form)
+
+    fetch(`/events/${eventId}/feedbacks`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast({
+          message: data.message,
+          type: 'success',
+          delay: 1000
+        })
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        showToast({
+          message: data.message,
+          type: 'danger',
+          errors: data.errors,
+          delay: 3000
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#editFeedbackModal"]').forEach(button => {
+    button.addEventListener('click', e => {
+      const feedbackId = button.dataset.feedbackId
+      
+      fetch(`/events/${eventId}/feedbacks/${feedbackId}/edit`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const formContainer = document.querySelector('#edit-feedback-form-container')
+        const originalForm = document.querySelector('#newFeedbackModal form')
+        const form = originalForm.cloneNode(true)
+        
+        form.action = `/events/${eventId}/feedbacks/${feedbackId}`
+        form.method = 'post'
+        const methodInput = document.createElement('input')
+        methodInput.type = 'hidden'
+        methodInput.name = '_method'
+        methodInput.value = 'patch'
+        form.appendChild(methodInput)
+        
+        form.querySelector(`input[name="feedback[rating]"][value="${data.rating}"]`).checked = true
+        form.querySelector('textarea[name="feedback[comment]"]').value = data.comment
+        form.querySelector('input[name="feedback[is_anonymous]"]').checked = data.is_anonymous
+        
+        formContainer.innerHTML = ''
+        formContainer.appendChild(form)
+        
+        document.querySelector('[data-action="update-feedback"]').dataset.feedbackId = feedbackId
+      })
+    })
+  })
+
+  document.querySelector('[data-action="update-feedback"]').addEventListener('click', e => {
+    const feedbackId = e.target.dataset.feedbackId
+    const form = document.querySelector('#edit-feedback-form-container form')
+    const formData = new FormData(form)
+    
+    fetch(`/events/${eventId}/feedbacks/${feedbackId}`, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editFeedbackModal'))
+        modal.hide()
+        showToast({
+          message: data.message,
+          type: 'success',
+          delay: 1000
+        })
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        showToast({
+          message: data.message,
+          type: 'danger',
+          errors: data.errors,
+          delay: 3000
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="delete-feedback"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const feedbackId = e.target.closest('[data-action="delete-feedback"]').dataset.feedbackId
+      
+      if (confirm('确定要删除这个反馈吗？')) {
+        fetch(`/events/${eventId}/feedbacks/${feedbackId}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1000
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              delay: 3000
+            })
+          }
+        })
+      }
+    })
+  })
+})
+</script>
+<% end %>

@@ -1,31 +1,39 @@
-<%= form_with(model: [event, feedback], local: true) do |f| %>
-  <% if feedback.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(feedback.errors.count, "错误") %> 阻止反馈被保存：</h2>
-      <ul>
-        <% feedback.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+<%= form_with model: [event, feedback], 
+      class: "needs-validation",
+      data: { turbo: false } do |f| %>
+  <div class="mb-4">
+    <label class="form-label">评分</label>
+    <div class="rating-input">
+      <% 5.times do |i| %>
+        <div class="form-check form-check-inline">
+          <%= f.radio_button :rating, i + 1, 
+                class: "form-check-input",
+                required: true %>
+          <%= f.label "rating_#{i + 1}", 
+                (i + 1).to_s, 
+                class: "form-check-label" %>
+        </div>
+      <% end %>
     </div>
-  <% end %>
-
-  <div class="field">
-    <%= f.label :rating, "评分" %><br />
-    <%= f.select :rating, options_for_select((1..5).map { |r| [r, r] }), prompt: "请选择评分" %>
   </div>
 
-  <div class="field">
-    <%= f.label :comment, "评论" %><br />
-    <%= f.text_area :comment %>
+  <div class="mb-4">
+    <div class="form-floating">
+      <%= f.text_area :comment, 
+            class: "form-control",
+            style: "height: 200px",
+            required: true,
+            placeholder: "反馈内容" %>
+      <%= f.label :comment do %>
+        <i class="bi bi-chat-left-text me-1"></i>反馈内容
+      <% end %>
+    </div>
   </div>
 
-  <div class="field">
-    <%= f.label :is_anonymous, "匿名提交" %>
-    <%= f.check_box :is_anonymous %>
-  </div>  
-
-  <div class="actions">
-    <%= f.submit '提交反馈'%>
+  <div class="mb-4">
+    <div class="form-check">
+      <%= f.check_box :is_anonymous, class: "form-check-input" %>
+      <%= f.label :is_anonymous, "匿名提交", class: "form-check-label" %>
+    </div>
   </div>
 <% end %>

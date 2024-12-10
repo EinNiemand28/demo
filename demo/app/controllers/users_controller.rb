@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   before_action :authenticate
   before_action :set_user, except: [:index]
-  before_action :require_admin, except: [:show, :edit, :update]
+  before_action :require_admin, only: [:index, :destroy, :toggle_role]
   before_action :authorize, only: [:show, :edit, :update]
 
   def index
@@ -20,6 +20,26 @@ class UsersController < ApplicationController
     @users = @users.order(created_at: :asc).page(params[:page]).per(10)
   end
 
+  def participated_events
+    @user = User.find(params[:id])
+    @events = @user.participated_events.page(params[:page]).per(12)
+  end
+
+  def volunteer_positions
+    @user = User.find(params[:id])
+    @applications = @user.student_volunteer_positions.includes(:volunteer_position).page(params[:page]).per(12)
+  end
+  
+  def organized_events
+    @user = User.find(params[:id])
+    @events = @user.organized_events.page(params[:page]).per(12)
+  end
+  
+  def associated_events
+    @user = User.find(params[:id])
+    @events = @user.associated_events.page(params[:page]).per(12)
+  end
+
   def show
   end
 
@@ -27,12 +47,13 @@ class UsersController < ApplicationController
   end
 
   def update
-    if @user.admin?
-      render json: {
-        success: false,
-        message: t('messages.error.unauthorized'),
-      }, status: :unauthorized
-    elsif @user.update(user_params)
+    # if @user.admin?
+    #   render json: {
+    #     success: false,
+    #     message: t('messages.error.unauthorized'),
+    #   }, status: :unauthorized
+    # elsif @user.update(user_params)
+    if @user.update(user_params)
       render json: {
         success: true,
         message: t('messages.success.user.update'),

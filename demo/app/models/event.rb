@@ -26,7 +26,7 @@ class Event < ApplicationRecord
   has_many :volunteer_positions, foreign_key: "event_id", dependent: :destroy
   has_many :event_volunteer_positions, through: :volunteer_positions, source: :volunteer_position
   
-  # has_many :feedbacks, dependent: :destroy
+  has_many :feedbacks, dependent: :destroy
 
   # after_update :notify_changes
 

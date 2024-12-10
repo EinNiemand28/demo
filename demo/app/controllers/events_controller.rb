@@ -18,6 +18,7 @@ class EventsController < ApplicationController
   end
 
   def show
+    @feedbacks = @event.feedbacks.includes(:user).order(created_at: :desc).page(params[:page]).per(5)
   end
 
   def edit

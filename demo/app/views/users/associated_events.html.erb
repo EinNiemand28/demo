@@ -1,0 +1,59 @@
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <h4 class="card-title mb-0">
+            <i class="bi <%= action_name == 'organized_events' ? 'bi-calendar2-plus' : 'bi-calendar2-event' %> me-2"></i>
+            <%= action_name == 'organized_events' ? '我组织的活动' : '我关联的活动' %>
+          </h4>
+          <span class="badge bg-primary">
+            共 <%= @events.count %> 个活动
+          </span>
+        </div>
+        
+        <% if action_name == 'organized_events' %>
+          <%= link_to new_event_path, class: "btn btn-primary" do %>
+            <i class="bi bi-plus-lg me-1"></i>创建活动
+          <% end %>
+        <% end %>
+      </div>
+
+      <% if @events.any? %>
+        <div class="row g-4">
+          <% @events.each do |event| %>
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">
+                      <%= link_to event.title, event_path(event), class: "text-decoration-none" %>
+                    </h5>
+                    <span class="badge <%= event_status_badge_class(event.status) %>">
+                      <%= event_status(event.status) %>
+                    </span>
+                  </div>
+                  
+                  <div class="text-muted small mb-3">
+                    <div><i class="bi bi-geo-alt me-1"></i><%= event.location %></div>
+                    <div><i class="bi bi-calendar-event me-1"></i><%= l event.start_time, format: :short %></div>
+                    <div><i class="bi bi-people me-1"></i>参与人数：<%= event.participants.count %>/<%= event.max_participants %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4">
+          <%= paginate @events %>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="bi bi-calendar2-x text-muted" style="font-size: 4rem;"></i>
+          <h5 class="mt-3 text-muted">暂无相关活动</h5>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

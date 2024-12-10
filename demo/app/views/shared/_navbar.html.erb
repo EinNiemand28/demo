@@ -23,6 +23,38 @@
         </li>
 
         <% if Current.user %>
+          <% if Current.user.student? %>
+            <li class="nav-item">
+              <%= link_to participated_events_user_path(Current.user), 
+                    class: "nav-link fs-5 #{'active fw-bold' if action_name == 'participated_events'}" do %>
+                <i class="bi bi-calendar2-check me-1"></i>我参加的活动
+              <% end %>
+            </li>
+            <li class="nav-item">
+              <%= link_to volunteer_positions_user_path(Current.user),
+                    class: "nav-link fs-5 #{'active fw-bold' if action_name == 'volunteer_positions'}" do %>
+                <i class="bi bi-person-workspace me-1"></i>我的岗位申请
+              <% end %>
+            </li>
+          <% else %>
+            <li class="nav-item">
+              <%= link_to organized_events_user_path(Current.user),
+                    class: "nav-link fs-5 #{'active fw-bold' if action_name == 'organized_events'}" do %>
+                <i class="bi bi-calendar2-plus me-1"></i>我组织的活动
+              <% end %>
+            </li>
+            <% if Current.user.teacher? %>
+              <li class="nav-item">
+                <%= link_to associated_events_user_path(Current.user),
+                      class: "nav-link fs-5 #{'active fw-bold' if action_name == 'associated_events'}" do %>
+                  <i class="bi bi-calendar2-event me-1"></i>我关联的活动
+                <% end %>
+              </li>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <% if Current.user %>
           <% if Current.user.admin? %>
             <li class="nav-item">
               <%= link_to users_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'users'}" do %>
