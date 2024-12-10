@@ -19,7 +19,7 @@ deploy-demo:
     - cd /demo
     - bundle install
     - rails db:migrate
-    - whenever --update-crontab
+    # - whenever --update-crontab
     - sv restart demo
   only:
     - demo
