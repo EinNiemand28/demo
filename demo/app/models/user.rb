@@ -59,6 +59,20 @@ class User < ApplicationRecord
     attachable.variant :thumb, resize_to_fill: [150, 150]
   end
 
+  def avatar_thumbnail
+    if avatar.attached?
+      begin
+        Rails.cache.fetch([self, "avatar_thumbnail", avatar.blob.id], expires_in: 1.hour) do
+          avatar.variant(resize_to_fill: [40, 40]).processed
+        end
+      rescue ActiveStorage::FileNotFoundError
+        ActionController::Base.helpers.asset_path("default_avatar.png")
+      end
+    else
+      ActionController::Base.helpers.asset_path("default_avatar.png")
+    end
+  end
+
   validate :acceptable_avatar
 
   def unread_notifications_count
