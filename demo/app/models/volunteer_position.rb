@@ -13,7 +13,20 @@ class VolunteerPosition < ApplicationRecord
   has_many :student_volunteer_positions, dependent: :destroy
   has_many :volunteers, -> { where(student_volunteer_positions: { status: :approved }) }, through: :student_volunteer_positions, source: :user
 
+  after_update :notify_changes
+
+
+
   private
+  def notify_changes
+    changed_fields = []
+    changed_fields << "名称" if saved_change_to_name?
+    changed_fields << "描述" if saved_change_to_description?
+    changed_fields << "志愿者时长" if saved_change_to_volunteer_hours?
+
+    NotificationService.notify_volunteer_position_updated(self, changed_fields) if changed_fields.any?
+  end
+
   def registration_deadline_before_start_time
     if registration_deadline >= event.start_time
       errors.add(:registration_deadline, "申请截止时间必须早于活动开始时间")

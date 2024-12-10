@@ -77,7 +77,9 @@ class EventsController < ApplicationController
   def update_status
     if @event.update(status: params[:status])
       if params[:status] == 'upcoming'
-        # NotificationService.notify_event_approved(@event)
+        NotificationService.notify_event_approved(@event)
+      elsif params[:status] == 'canceled'
+        NotificationService.notify_event_canceled(@event)
       end
       render json: {
         success: true,

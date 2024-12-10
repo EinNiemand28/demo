@@ -68,7 +68,7 @@ class StudentVolunteerPositionsController < ApplicationController
 
     @student_volunteer_position = @volunteer_position.student_volunteer_positions.find_by(params[:registration_id])
     if @student_volunteer_position.update(status: :approved)
-      # NotificationService.notify_volunteer_approved(@student_volunteer_position)
+      NotificationService.notify_volunteer_approved(@student_volunteer_position)
       render json: {
         success: true,
         message: t('messages.success.student_volunteer_position.approve')
@@ -105,7 +105,7 @@ class StudentVolunteerPositionsController < ApplicationController
   end
 
   def authorize
-    unless Current.user.admin? || @volunteer_position.event.organizer_teacher == Current.user
+    unless Current.user.admin? || @volunteer_position.event.organizing_teacher == Current.user
       render json: {
         success: false,
         message: t('messages.error.unauthorized')

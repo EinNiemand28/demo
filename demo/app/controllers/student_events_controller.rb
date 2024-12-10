@@ -58,7 +58,7 @@ class StudentEventsController < ApplicationController
   private
 
   def check_time
-    unless @event.registration_deadline >= Time.current && Current.user.admin?
+    unless @event.registration_deadline >= Time.current || Current.user.admin?
       render json: {
         success: false,
         message: '报名已截止。'

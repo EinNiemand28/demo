@@ -232,6 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       }
     })
+    .catch(error => {
+      showToast({
+        message: '系统错误，请稍后重试',
+        type: 'danger',
+        delay: 3000
+      })
+    })
   })
 
   document.querySelectorAll('[data-action="delete-feedback"]').forEach(button => {
@@ -265,6 +272,13 @@ document.addEventListener('DOMContentLoaded', () => {
               delay: 3000
             })
           }
+        })
+        .catch(error => {
+          showToast({
+            message: '系统错误，请稍后重试',
+            type: 'danger',
+            delay: 3000
+          })
         })
       }
     })

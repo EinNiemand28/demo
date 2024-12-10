@@ -1,6 +1,5 @@
 <%= form_with(model: event, data: { turbo: false }, class: "needs-validation", multipart: true) do |form| %>
   <div class="row g-4">
-    <!-- 活动标题 -->
     <div class="col-12">
       <div class="form-floating">
         <%= form.text_field :title, 
@@ -13,7 +12,6 @@
       </div>
     </div>
 
-    <!-- 活动描述 -->
     <div class="col-12">
       <div class="form-floating">
         <%= form.text_area :description, 
@@ -27,7 +25,6 @@
       </div>
     </div>
 
-    <!-- 活动时间 -->
     <div class="col-md-6">
       <div class="form-floating">
         <%= form.datetime_local_field :start_time, 
@@ -52,7 +49,6 @@
       </div>
     </div>
 
-    <!-- 活动地点 -->
     <div class="col-12">
       <div class="form-floating">
         <%= form.text_field :location, 
@@ -65,7 +61,6 @@
       </div>
     </div>
 
-    <!-- 报名截止和人数限制 -->
     <div class="col-md-6">
       <div class="form-floating">
         <%= form.datetime_local_field :registration_deadline, 
@@ -91,7 +86,6 @@
       </div>
     </div>
 
-    <!-- 按钮组 -->
     <div class="col-12">
       <div class="d-flex justify-content-end gap-2">
         <%= link_to events_path, class: "btn btn-light px-4" do %>

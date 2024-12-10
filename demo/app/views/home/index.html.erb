@@ -1,22 +1,105 @@
 <div class="container mt-5">
-  <div class="row justify-content-center">
+  <div class="row justify-content-center mb-5">
     <div class="col-md-8 text-center">
-      <h1 class="mb-4">这是一个简易的校园活动管理系统</h1>
-      <p>你可以在这里查看活动信息，报名参加活动，以及查看自己的报名情况。</p>
-      <button type="button"
-              class="btn btn-success"
-              data-action="test-toast">
-        测试 Toast
-      </button>
+      <h1 class="display-4 mb-4">校园活动管理系统</h1>
+      <p class="lead text-muted">连接校园，分享快乐，共创美好时光</p>
+      
       <% if Current.user %>
-        <p>欢迎回来, <%= Current.user.username %></p>
-        <%= button_to "登出", Current.session, method: :delete, class: "btn btn-danger mx-2" %>
+        <div class="alert alert-success d-inline-flex align-items-center">
+          <i class="bi bi-person-check me-2"></i>
+          欢迎回来，<%= Current.user.username %>
+        </div>
       <% else %>
         <div class="mt-4">
-          <%= link_to "注册", sign_up_path, class: "btn btn-primary mx-2" %>
-          <%= link_to "登录", sign_in_path, class: "btn btn-outline-primary mx-2" %>
+          <%= link_to sign_up_path, class: "btn btn-primary btn-lg mx-2" do %>
+            <i class="bi bi-person-plus me-1"></i>立即注册
+          <% end %>
+          <%= link_to sign_in_path, class: "btn btn-outline-primary btn-lg mx-2" do %>
+            <i class="bi bi-box-arrow-in-right me-1"></i>登录
+          <% end %>
         </div>
       <% end %>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="display-6 text-primary mb-3">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+          <h4 class="card-title mb-3">活动管理</h4>
+          <p class="card-text text-muted">
+            教师可以创建和管理活动，学生可以浏览和报名参加感兴趣的活动。
+            支持活动状态追踪和反馈评价。
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="display-6 text-success mb-3">
+            <i class="bi bi-person-workspace"></i>
+          </div>
+          <h4 class="card-title mb-3">志愿者岗位</h4>
+          <p class="card-text text-muted">
+            活动可以设置多个志愿者岗位，学生可以申请感兴趣的岗位。
+            完成志愿服务后可以获得相应的志愿时长。
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="display-6 text-info mb-3">
+            <i class="bi bi-bell"></i>
+          </div>
+          <h4 class="card-title mb-3">即时通知</h4>
+          <p class="card-text text-muted">
+            活动的重要更新都会通过系统通知及时告知。
+            支持已读未读标记，不错过任何重要信息。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h4 class="card-title text-center mb-4">
+            <i class="bi bi-graph-up me-2"></i>平台数据
+          </h4>
+          
+          <div class="row text-center g-4">
+            <div class="col-md-3">
+              <h2 class="text-primary mb-1"><%= Event.count %></h2>
+              <p class="text-muted mb-0">个活动</p>
+            </div>
+            
+            <div class="col-md-3">
+              <h2 class="text-success mb-1"><%= User.student.count %></h2>
+              <p class="text-muted mb-0">名学生</p>
+            </div>
+            
+            <div class="col-md-3">
+              <h2 class="text-info mb-1"><%= User.teacher.count %></h2>
+              <p class="text-muted mb-0">名教师</p>
+            </div>
+            
+            <div class="col-md-3">
+              <h2 class="text-warning mb-1"><%= VolunteerPosition.count %></h2>
+              <p class="text-muted mb-0">个志愿岗位</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -36,27 +119,3 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 </script>
 <% end %>
-
-<%# <p style="color: green"><%= notice %></p>
-
-<%# <p>Signed as <%= Current.user.email %></p>
-
-<%# <h2>Login and verification</h2> %>
-
-<%# <div> %>
-  <%# <%= link_to "Change password", edit_password_path %>
-<%# </div> %>
-
-<%# <div> %>
-  <%# <%= link_to "Change email address", edit_identity_email_path %>
-<%# </div> %>
-
-<%# <h2>Access history</h2> %>
-
-<%# <div> %>
-  <%# <%= link_to "Devices & Sessions", sessions_path %>
-<%# </div> %>
-
-<%# <br> %>
-
-<%# <%= button_to "Log out", Current.session, method: :delete %>

@@ -28,7 +28,11 @@ class Event < ApplicationRecord
   
   has_many :feedbacks, dependent: :destroy
 
-  # after_update :notify_changes
+  after_update :notify_changes
+
+  def ongoing?
+    status.to_sym == :ongoing
+  end
 
   def finished?
     status.to_sym == :finished
@@ -51,7 +55,7 @@ class Event < ApplicationRecord
     changed_fields << "地点" if saved_change_to_location?
     # changed_fields << "状态" if saved_change_to_status?
 
-    NotificationService.notify_event_update(self, changed_fields) if changed_fields.any?
+    NotificationService.notify_event_updated(self, changed_fields) if changed_fields.any?
   end
   
   def valid_status_transition

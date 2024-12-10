@@ -82,7 +82,7 @@ class VolunteerPositionsController < ApplicationController
   end
 
   def authorize
-    unless Current.user.admin? || @event.organizer_teacher == Current.user
+    unless Current.user.admin? || @event.organizing_teacher == Current.user
       render json: {
         success: false,
         message: t('messages.error.unauthorized')
