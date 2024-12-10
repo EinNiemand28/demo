@@ -85,6 +85,16 @@
               <% end %>
             </ul>
           </li>
+          <li class="nav-item">
+            <%= link_to notifications_path, class: "nav-link position-relative" do %>
+              <i class="bi bi-bell fs-4"></i>
+              <% if (count = Current.user.unread_notifications_count) > 0 %>
+                <span class="position-absolute top-3 start-100 translate-middle badge rounded-pill bg-danger">
+                  <%= count %>
+                </span>
+              <% end %>
+            <% end %>
+          </li>
         <% else %>
           <li class="nav-item d-flex align-items-center">
             <%= link_to sign_in_path, class: "nav-link fs-5" do %>

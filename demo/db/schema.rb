@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_10_080748) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_10_100211) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -69,6 +69,23 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_10_080748) do
     t.index ["event_id", "user_id"], name: "index_feedbacks_on_event_id_and_user_id", unique: true
     t.index ["event_id"], name: "index_feedbacks_on_event_id"
     t.index ["user_id"], name: "index_feedbacks_on_user_id"
+  end
+
+  create_table "notification_users", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "notification_id", null: false
+    t.bigint "user_id", null: false
+    t.boolean "is_read", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["notification_id", "user_id"], name: "index_notification_users_on_notification_id_and_user_id", unique: true
+    t.index ["notification_id"], name: "index_notification_users_on_notification_id"
+    t.index ["user_id"], name: "index_notification_users_on_user_id"
+  end
+
+  create_table "notifications", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "sessions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -146,6 +163,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_10_080748) do
   add_foreign_key "events", "users", column: "organizing_teacher_id"
   add_foreign_key "feedbacks", "events"
   add_foreign_key "feedbacks", "users"
+  add_foreign_key "notification_users", "notifications"
+  add_foreign_key "notification_users", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "student_events", "events"
   add_foreign_key "student_events", "users"

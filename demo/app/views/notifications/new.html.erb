@@ -1,138 +1,182 @@
-<h1>发送新通知</h1>
-
-<div class="notification-form">
-  <%# 搜索表单 %>
-  <div class="search-section">
-    <h3>搜索用户</h3>
-    <%= search_form_for @q, url: new_notification_path, method: :get do |f| %>
-      <div class="search-fields">
-        <div>
-          <%= f.label :name_cont, "姓名包含" %>
-          <%= f.search_field :name_cont %>
-        </div>
-        
-        <div>
-          <%= f.label :role_level_eq, "用户类型" %>
-          <%= f.select :role_level_eq, 
-              User.role_levels.map { |k,v| [k.humanize, v] },
-              include_blank: "全部" %>
-        </div>
-        
-        <%= f.submit "搜索用户", class: 'button' %>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-bell-fill me-2"></i>发送通知
+        </h4>
       </div>
-    <% end %>
-  </div>
 
-  <%# 通知创建表单 %>
-  <%= form_with(model: @notification, local: true, class: 'create-notification') do |f| %>
-    <% if @notification.errors.any? %>
-      <div class="error-messages">
-        <ul>
-          <% @notification.errors.full_messages.each do |msg| %>
-            <li><%= msg %></li>
+      <div class="card bg-light mb-4">
+        <div class="card-body">
+          <%= search_form_for @q, url: new_notification_path, method: :get, class: "row g-3" do |f| %>
+            <div class="col-md-4">
+              <div class="form-floating">
+                <%= f.search_field :username_cont, class: "form-control", placeholder: "用户名包含" %>
+                <%= f.label :username_cont do %>
+                  <i class="bi bi-person me-1"></i>用户名包含
+                <% end %>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="form-floating">
+                <%= f.select :role_eq, 
+                    User.roles.map { |k,v| [t("activerecord.enums.user.#{k}"), v] },
+                    { include_blank: "全部" },
+                    { class: "form-select" } %>
+                <%= f.label :role_eq do %>
+                  <i class="bi bi-person-badge me-1"></i>用户类型
+                <% end %>
+              </div>
+            </div>
+
+            <div class="col-md-4 d-flex align-items-center">
+              <%= f.submit "搜索", class: "btn btn-primary w-100" %>
+            </div>
           <% end %>
-        </ul>
+        </div>
       </div>
-    <% end %>
 
-    <div class="field">
-      <%= f.label :content, "通知内容" %>
-      <%= f.text_area :content, required: true %>
-    </div>
-
-    <div class="field">
-      <h3>接收用户</h3>
-      <div class="users-table">
-        <table>
-          <thead>
-            <tr>
-              <th><%= check_box_tag 'select_all', '', false, onclick: 'toggleAll(this)' %></th>
-              <th>姓名</th>
-              <th>邮箱</th>
-              <th>类型</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @users.each do |user| %>
-              <tr>
-                <td><%= check_box_tag 'user_ids[]', user.id, false, class: 'user-checkbox' %></td>
-                <td><%= user.name %></td>
-                <td><%= user.email %></td>
-                <td><%= user.role_level.humanize %></td>
-              </tr>
+      <%= form_with(model: @notification, 
+            class: "needs-validation",
+            data: { action: "create-notification" }) do |f| %>
+        <div class="mb-4">
+          <div class="form-floating">
+            <%= f.text_area :content, 
+                  class: "form-control",
+                  style: "height: 120px",
+                  required: true,
+                  placeholder: "通知内容" %>
+            <%= f.label :content do %>
+              <i class="bi bi-chat-text me-1"></i>通知内容
             <% end %>
-          </tbody>
-        </table>
-      </div>
-      <%= paginate @users %>
-    </div>
+          </div>
+        </div>
 
-    <%= f.submit "发送通知", class: 'button primary', data: { disable_with: '发送中...' } %>
-  <% end %>
+        <div class="card mb-4">
+          <div class="card-header bg-light py-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">选择接收用户</h5>
+              <div class="form-check">
+                <%= check_box_tag 'select_all', '', false, 
+                      class: "form-check-input",
+                      onclick: 'toggleAll(this)' %>
+                <%= label_tag 'select_all', '全选', class: "form-check-label" %>
+              </div>
+            </div>
+          </div>
+          
+          <div class="table-responsive" style="max-height: 400px">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th width="5%"></th>
+                  <th width="25%">用户名</th>
+                  <th width="40%">邮箱</th>
+                  <th width="30%">角色</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @users.each do |user| %>
+                  <tr>
+                    <td>
+                      <%= check_box_tag 'user_ids[]', user.id, false, 
+                            class: 'form-check-input user-checkbox' %>
+                    </td>
+                    <td><%= user.username %></td>
+                    <td><%= user.email %></td>
+                    <td>
+                      <span class="badge bg-secondary">
+                        <%= t("activerecord.enums.user.#{user.role}") %>
+                      </span>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="card-footer bg-light py-2">
+            <div class="d-flex justify-content-center">
+              <%= paginate @users %>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <%= link_to notifications_path, class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-arrow-left me-1"></i>返回
+          <% end %>
+          <%= f.button class: "btn btn-primary" do %>
+            <i class="bi bi-send me-1"></i>发送通知
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 </div>
 
+<% content_for :page_scripts do %>
 <script>
 function toggleAll(source) {
-  var checkboxes = document.getElementsByClassName('user-checkbox');
-  for(var i=0; i < checkboxes.length; i++) {
-    checkboxes[i].checked = source.checked;
+  document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+    checkbox.checked = source.checked
+  })
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('[data-action="create-notification"]')
+  
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated')
+        return
+      }
+
+      const formData = new FormData(form)
+    
+      const selectedUsers = document.querySelectorAll('.user-checkbox:checked')
+      if (selectedUsers.length === 0) {
+        showToast({
+          message: '请至少选择一个接收用户',
+          type: 'danger',
+          delay: 3000
+        })
+        return
+      }
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1500,
+            redirect: data.redirect_url
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+    })
   }
-}
+})
 </script>
-
-<style>
-.notification-form {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.search-section {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #f5f5f5;
-  border-radius: 5px;
-}
-
-.search-fields {
-  display: flex;
-  gap: 15px;
-  align-items: end;
-}
-
-.field {
-  margin-bottom: 20px;
-}
-
-.users-table {
-  margin: 15px 0;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 8px;
-  border: 1px solid #ddd;
-}
-
-.button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.button.primary {
-  background: #007bff;
-  color: white;
-}
-
-.error-messages {
-  color: red;
-  margin-bottom: 15px;
-}
-</style>
+<% end %>

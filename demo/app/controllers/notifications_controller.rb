@@ -1,24 +1,28 @@
 class NotificationsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :ensure_admin!, only: [:new, :create]
+  before_action :authenticate
+  before_action :set_notification, except: [:index, :new, :create]
+  before_action :authorize, only: [:toggle_read]
+  before_action :require_admin, only: [:new, :create]
 
   def index
-    @notifications = current_user.notifications_with_status.page(params[:page])
+    @notifications = Current.user.notification_users
+                            .includes(:notification)
+                            .order(created_at: :desc)
+                            .page(params[:page]).per(10)
   end
   
   def toggle_read
-    @notification_user = current_user.notification_users.find(params[:id])
-    @notification_user.update(is_read: !@notification_user.is_read)
-
-    respond_to do |format|
-      format.html { redirect_back_with_fallback notice: "操作成功" }
-      format.turbo_stream {
-        render turbo_stream: turbo_stream.replace(
-          @notification_user, 
-          partial: "notification", 
-          locals: { notification_user: @notification_user }
-        )
+    @notification_user = Current.user.notification_users.find_by(notification: @notification)
+    if @notification_user&.update(is_read: !@notification_user.is_read)
+      render json: {
+        success: true,
+        message: @notification_user.is_read ? "已标记为已读" : "已标记为未读"
       }
+    else
+      render json: {
+        success: false,
+        message: "操作失败",
+      }, status: :unprocessable_entity
     end
   end
 
@@ -30,7 +34,6 @@ class NotificationsController < ApplicationController
 
   def create
     @notification = Notification.new(notification_params)
-    @notification.notification_time = Time.current
     user_ids = params[:user_ids] || []
 
     if user_ids.empty?
@@ -41,23 +44,48 @@ class NotificationsController < ApplicationController
       return
     end
 
-    respond_to do |format|
-      if @notification.save
-        user_ids.each do |user_id|
-          NotificationUser.create(user_id: user_id, notification: @notification)
-        end
-        format.html { redirect_to notifications_path, notice: "通知发送成功" }
-        format.json { render :show, status: :created, location: @notification }
-      else
-        @q = User.ransack(params[:q])
-        @users = @q.result(distinct: true).page(params[:page])
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @notification.errors, status: :unprocessable_entity }
+    if @notification.save
+      user_ids.each do |user_id|
+        NotificationUser.create(user_id: user_id, notification: @notification)
       end
+      render json: {
+        success: true,
+        message: "通知已发送",
+        redirect_url: notifications_path
+      }
+    else
+      @q = User.ransack(params[:q])
+      @users = @q.result(distinct: true).page(params[:page])
+      render json: {
+        success: false,
+        message: "操作失败",
+        errors: @notification.errors.full_messages
+      }, status: :unprocessable_entity
     end
   end
   
   private
+  def authorize
+    unless Current.user.notification_users.exists?(notification: @notification)
+      render json: {
+        success: false,
+        message: t("errors.messages.unauthorized"),
+      }, status: :unauthorized
+    end
+  end
+
+  def require_admin
+    unless Current.user.admin?
+      render json: {
+        success: false,
+        message: t("errors.messages.unauthorized"),
+      }, status: :unauthorized
+    end
+  end
+
+  def set_notification
+    @notification = Notification.find(params[:id])
+  end
 
   def notification_params
     params.require(:notification).permit(:content)

@@ -1,20 +1,105 @@
-<%# app/views/notifications/index.html.erb %>
-<h1>我的通知</h1>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <div class="row align-items-center mb-4">
+        <div class="col-md-4">
+          <h4 class="card-title mb-0">
+            <i class="bi bi-bell me-2"></i>通知中心
+          </h4>
+        </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>通知内容</th>
-      <th>时间</th>
-      <th>状态</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @notifications.each do |notification_user| %>
-      <%= render partial: 'notification', locals: { notification_user: notification_user } %>
-    <% end %>
-  </tbody>
-</table>
+        <div class="col-md-8">
+          <div class="d-flex justify-content-end gap-2">
+            <% if Current.user&.admin? %>
+              <%= link_to new_notification_path, class: "btn btn-primary" do %>
+                <i class="bi bi-plus-lg me-1"></i>发布通知
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
 
-<%= paginate @notifications %>
+      <% if @notifications.any? %>
+        <div class="list-group list-group-flush">
+          <% @notifications.each do |nu| %>
+            <div class="list-group-item list-group-item-action">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1 <%= 'fw-bold' unless nu.is_read %>">
+                      <%= nu.notification.content %>
+                    </h6>
+                    <small class="text-muted">
+                      <%= l nu.created_at, format: :short %>
+                    </small>
+                  </div>
+                </div>
+                
+                <%= button_to toggle_read_notification_path(nu.notification),
+                      method: :patch,
+                      class: "btn btn-sm #{nu.is_read ? 'btn-outline-secondary' : 'btn-outline-primary'} ms-3",
+                      form: { data: { action: "toggle-read" } } do %>
+                  <i class="bi <%= nu.is_read ? 'bi-check2-all' : 'bi-check2' %> me-1"></i>
+                  <%= nu.is_read ? '标为未读' : '标为已读' %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4">
+          <%= paginate @notifications %>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="bi bi-bell-slash text-muted" style="font-size: 4rem;"></i>
+          <h5 class="mt-3 text-muted">暂无通知</h5>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-action="toggle-read"]').forEach(form => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      
+      fetch(form.action, {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // 更新消息样式
+          const notification = form.closest('.list-group-item')
+          const content = notification.querySelector('h6')
+          content.classList.toggle('fw-bold')
+          
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1000
+          })
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            delay: 3000
+          })
+        }
+      })
+    })
+  })
+})
+</script>
+<% end %>

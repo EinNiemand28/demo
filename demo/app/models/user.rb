@@ -44,12 +44,26 @@ class User < ApplicationRecord
 
   has_many :feedbacks, dependent: :destroy
 
+  has_many :notification_users, dependent: :destroy
+  has_many :notifications, through: :notification_users, source: :notification
+
+  def self.ransackable_attributes(auth_object = nil)
+    %w[username email phone role]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    []
+  end
 
   has_one_attached :avatar do |attachable|
     attachable.variant :thumb, resize_to_fill: [150, 150]
   end
 
   validate :acceptable_avatar
+
+  def unread_notifications_count
+    notifications.where(notification_users: { is_read: false }).count
+  end
 
   def admin?
     self.role.to_sym == :admin
