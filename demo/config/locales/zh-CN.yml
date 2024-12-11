@@ -18,7 +18,7 @@ zh-CN:
         teacher: "老师"
         admin: "管理员"
       event:
-        pending: "待审核"
+        draft: "草稿"
         upcoming: "即将开始"
         ongoing: "进行中"
         finished: "已结束"
@@ -27,6 +27,10 @@ zh-CN:
         pending: "待审核"
         approved: "已通过"
         canceled: "已取消"
+      application:
+        pending: "待审核"
+        approved: "已通过"
+        rejected: "已拒绝"
     errors:
       models:
         user:
@@ -103,6 +107,13 @@ zh-CN:
             base:
               event_must_be_finished: "活动必须已结束才能反馈"
               user_must_be_participant: "只有参与者才能反馈"
+        application:
+          attributes:
+            title:
+              blank: "申请标题不能为空"
+              too_long: "申请标题不能超过%{count}个字符"
+            plan:
+              blank: "申请计划不能为空"
 
   views:
     pagination:
@@ -126,7 +137,7 @@ zh-CN:
         create: "活动创建成功"
         update: "活动更新成功"
         delete: "活动已删除"
-        upcoming: "活动已审核通过"
+        upcoming: "活动已发布"
         ongoing: "活动状态已更新为进行中"
         finished: "活动状态已更新为已结束"
         canceled: "活动已取消"
@@ -148,6 +159,13 @@ zh-CN:
         create: "反馈成功"
         update: "反馈更新成功"
         delete: "反馈已删除"
+      application:
+        create: "申请提交成功"
+        update: "申请更新成功"
+        approve: "审核通过"
+        reject: "已拒绝"
+        delete: "申请已删除"
+        reapply: "已重新提交申请"
     error:
       unauthorized: "您没有权限执行此操作"
       user:
@@ -181,3 +199,10 @@ zh-CN:
         create: "反馈失败"
         update: "反馈更新失败"
         delete: "反馈删除失败"
+      application:
+        create: "申请提交失败"
+        update: "申请更新失败"
+        approve: "审核失败"
+        reject: "拒绝失败"
+        delete: "申请删除失败"
+        reapply: "重新提交申请失败"

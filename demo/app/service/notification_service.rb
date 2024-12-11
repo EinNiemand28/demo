@@ -35,9 +35,14 @@ class NotificationService
       create_notification(content, event.participants)
     end
 
-    def notify_event_approved(event)
-      content = "您组织的活动「#{event.title}」已通过审核。"
-      create_notification(content, [event.organizing_teacher])
+    def notify_application_approved(application)
+      content = "您申请的活动「#{application.title}」已通过审核。"
+      create_notification(content, [application.applicant])
+    end
+
+    def notify_application_rejected(application)
+      content = "您申请的活动「#{application.title}」未通过审核。"
+      create_notification(content, [application.applicant])
     end
 
     def notify_volunteer_position_updated(volunteer_position, changed_fields)

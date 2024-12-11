@@ -22,7 +22,7 @@ class UsersController < ApplicationController
 
   def participated_events
     @user = User.find(params[:id])
-    @events = @user.participated_events.page(params[:page]).per(12)
+    @events = @user.participated_events.visible.page(params[:page]).per(12)
   end
 
   def volunteer_positions

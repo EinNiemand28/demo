@@ -1,5 +1,5 @@
 class Event < ApplicationRecord
-  enum :status, { :pending => 0, :upcoming => 1, :ongoing => 2, :finished => 3, :canceled => 4 }
+  enum :status, { :draft => 0, :upcoming => 1, :ongoing => 2, :finished => 3, :canceled => 4 }
   validate :valid_status_transition, if: :status_changed?
 
   belongs_to :organizing_teacher, class_name: "User", foreign_key: "organizing_teacher_id"
@@ -29,6 +29,16 @@ class Event < ApplicationRecord
   has_many :feedbacks, dependent: :destroy
 
   after_update :notify_changes
+
+  scope :visible, -> { where.not(status: :draft) }
+
+  def draft?
+    status.to_sym == :draft
+  end
+
+  def upcoming?
+    status.to_sym == :upcoming
+  end
 
   def ongoing?
     status.to_sym == :ongoing
@@ -60,9 +70,9 @@ class Event < ApplicationRecord
   
   def valid_status_transition
     case status_was.to_sym
-    when :pending
+    when :draft
       unless [:upcoming, :canceled].include?(status.to_sym)
-        errors.add(:status, "待审核状态只能变更为即将开始或已取消")
+        errors.add(:status, "草稿状态只能变更为即将开始或已取消")
       end
     when :upcoming
       unless [:ongoing, :canceled].include?(status.to_sym)

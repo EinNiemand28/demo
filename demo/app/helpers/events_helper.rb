@@ -1,8 +1,8 @@
 module EventsHelper
   def event_status(status)
     case status
-    when 'pending'
-      t('activerecord.enums.event.pending')
+    when 'draft'
+      t('activerecord.enums.event.draft')
     when 'upcoming'
       t('activerecord.enums.event.upcoming')
     when 'ongoing'
@@ -16,7 +16,7 @@ module EventsHelper
 
   def event_status_badge_class(status)
     case status
-    when 'pending'
+    when 'draft'
       'bg-info text-dark'
     when 'upcoming'
       'bg-success text-white'

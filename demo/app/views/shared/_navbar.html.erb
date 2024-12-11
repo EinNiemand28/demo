@@ -22,6 +22,8 @@
           <% end %>
         </li>
 
+        
+
         <% if Current.user %>
           <% if Current.user.student? %>
             <li class="nav-item">
@@ -48,6 +50,17 @@
                 <%= link_to associated_events_user_path(Current.user),
                       class: "nav-link fs-5 #{'active fw-bold' if action_name == 'associated_events'}" do %>
                   <i class="bi bi-calendar2-event me-1"></i>我关联的活动
+                <% end %>
+              <li class="nav-item">
+                <%= link_to applications_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'applications'}" do %>
+                  <i class="bi bi-file-text me-1"></i>我的申请
+                <% end %>
+              </li>
+              </li>
+            <% else %>
+              <li class="nav-item">
+                <%= link_to applications_path, class: "nav-link fs-5 #{'active fw-bold' if controller_name == 'applications'}" do %>
+                  <i class="bi bi-files me-1"></i>活动申请管理
                 <% end %>
               </li>
             <% end %>

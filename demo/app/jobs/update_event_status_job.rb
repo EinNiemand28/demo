@@ -24,12 +24,12 @@ class UpdateEventStatusJob
 
   def update_finished_and_canceled
     Event.where("end_time <= ?", Time.current)
-         .where(status: [:ongoing, :pending])
+         .where(status: [:ongoing, :draft])
          .find_each do |event|
       event.with_lock do
         if event.ongoing?
           update_finished_event(event)
-        elsif event.pending?
+        elsif event.draft?
           update_canceled_event(event)
         end
       end

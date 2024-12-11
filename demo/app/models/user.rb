@@ -47,6 +47,8 @@ class User < ApplicationRecord
   has_many :notification_users, dependent: :destroy
   has_many :notifications, through: :notification_users, source: :notification
 
+  has_many :applications, foreign_key: "applicant_id", dependent: :destroy
+
   def self.ransackable_attributes(auth_object = nil)
     %w[username email phone role]
   end

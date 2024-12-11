@@ -16,13 +16,15 @@
                     class: "btn btn-outline-secondary #{params[:status].nil? ? 'active' : ''}" %>
               
               <% Event.statuses.each do |status, _value| %>
-                <%= link_to event_status(status), 
-                      events_path(status: status), 
-                      class: "btn btn-outline-secondary #{params[:status] == status ? 'active' : ''}" %>
+                <% if status != 'draft'%>
+                  <%= link_to event_status(status), 
+                        events_path(status: status), 
+                        class: "btn btn-outline-secondary #{params[:status] == status ? 'active' : ''}" %>
+                <% end %>
               <% end %>
             </div>
 
-            <% if Current.user&.admin? || Current.user&.teacher? %>
+            <% if Current.user&.admin? %>
               <%= link_to new_event_path, class: "btn btn-primary" do %>
                 <i class="bi bi-plus-lg me-1"></i>新建活动
               <% end %>
@@ -118,16 +120,6 @@
                           <i class="bi bi-pencil align-middle me-1"></i><span>编辑</span>
                         <% end %>
                       <% end %>
-
-                      <% if Current.user&.admin? && event.pending? %>
-                        <%= button_to update_status_event_path(event, status: 'upcoming'),
-                              method: :patch,
-                              class: "btn btn-outline-success d-inline-flex align-items-center",
-                              title: "批准活动",
-                              data: { action: "approve-event" } do %>
-                          <i class="bi bi-check-lg align-middle me-1"></i><span>通过</span>
-                        <% end %>
-                      <% end %>
                     </div>
                   </td>
                 </tr>
@@ -152,50 +144,6 @@
 <% content_for :page_scripts do %>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('[data-action="approve-event"]').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault()
-      const form = e.target.closest('form')
-      
-      if (confirm('确定要通过此活动审核吗？')) {
-        fetch(form.action, {
-          method: 'PATCH',
-          headers: {
-            'Accept': 'application/json',
-            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            showToast({
-              message: data.message,
-              type: 'success',
-              delay: 1500
-            })
-            setTimeout(() => {
-              window.location.reload()
-            }, 1500)
-          } else {
-            showToast({
-              message: data.message || '审核失败',
-              type: 'danger',
-              errors: data.errors,
-              delay: 3000
-            })
-          }
-        })
-        .catch(error => {
-          showToast({
-            message: '系统错误，请稍后重试',
-            type: 'danger',
-            delay: 3000
-          })
-        })
-      }
-    })
-  })
-
   document.querySelectorAll('[data-action="register-event"], [data-action="cancel-registration"]').forEach(button => {
     button.addEventListener('click', (e) => {
       e.preventDefault()

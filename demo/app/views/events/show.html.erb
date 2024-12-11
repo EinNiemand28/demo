@@ -15,7 +15,9 @@
             
             <div class="d-flex btn-group">
               <% if Current.user.admin? || Current.user == @event.organizing_teacher %>
-                <%= link_to edit_event_path(@event), class: "btn btn-primary d-inline-flex align-items-center" do %>
+                <%= button_to edit_event_path(@event), 
+                      method: :get,
+                      class: "btn btn-primary d-inline-flex align-items-center" do %>
                   <i class="bi bi-pencil me-1"></i>编辑
                 <% end %>
                 
@@ -185,20 +187,30 @@
             </div>
             
             <div class="btn-group">
-              <% if @event.pending? && Current.user.admin? %>
-                <%= button_to update_status_event_path(@event, status: 'upcoming'),
-                      method: :patch,
-                      class: "btn btn-success",
-                      form: { data: { action: "approve-event" } } do %>
-                  <i class="bi bi-check-circle me-1"></i>审核通过
+              <% if Current.user.admin? || Current.user == @event.organizing_teacher %>
+                <% if @event.draft? %>
+                  <%= button_to update_status_event_path(@event, status: 'upcoming'),
+                        method: :patch,
+                        title: "发布活动",
+                        class: "btn btn-success",
+                        form: { data: { 
+                          action: "publish-event",
+                          confirm: "确定要发布此活动吗? 发布后所有人可见."
+                        } } do %>
+                    <i class="bi bi-send me-1"></i>发布活动
+                  <% end %>
                 <% end %>
-              <% end %>
-              <% unless @event.canceled? %>
-                <%= button_to update_status_event_path(@event, status: 'canceled'),
-                      method: :patch,
-                      class: "btn btn-outline-danger",
-                      form: { data: { action: "cancel-event" } } do %>
-                  <i class="bi bi-x-circle me-1"></i>取消活动
+                <% unless @event.canceled? %>
+                  <%= button_to update_status_event_path(@event, status: 'canceled'),
+                        method: :patch,
+                        title: "取消活动",
+                        class: "btn btn-outline-danger",
+                        form: { data: { 
+                          action: "cancel-event",
+                          confirm: "确定要取消此活动吗? 取消将不可恢复."
+                        } } do %>
+                    <i class="bi bi-x-circle me-1"></i>取消活动
+                  <% end %>
                 <% end %>
               <% end %>
             </div>
@@ -256,13 +268,12 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
-  document.querySelectorAll('[data-action="approve-event"], [data-action="cancel-event"]').forEach(button => {
+  document.querySelectorAll('[data-action="publish-event"], [data-action="cancel-event"]').forEach(button => {
     button.addEventListener('click', (e) => {
       e.preventDefault()
       const form = e.target.closest('form')
-      const isApprove = form.dataset.action === 'approve-event'
       
-      if (confirm(`确定要${isApprove ? '通过' : '取消'}此活动吗？`)) {
+      if (confirm(form.dataset.confirm)) {
         fetch(form.action, {
           method: 'PATCH',
           headers: {

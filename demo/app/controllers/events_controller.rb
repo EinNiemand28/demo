@@ -1,7 +1,9 @@
 class EventsController < ApplicationController
   before_action :authenticate
   before_action :set_event, except: [:index, :new, :create]
-  before_action :authorize, only: [:edit, :update, :destroy]
+  before_action :require_admin, only: [:new, :create]
+  before_action :authorize, only: [:edit, :update, :destroy, :update_status]
+  before_action :ensure_can_delete, only: [:destroy]
 
   def index
     @events = Event.all
@@ -10,7 +12,7 @@ class EventsController < ApplicationController
       @events = @events.where(status: params[:status])
     end
 
-    @events = @events.order(created_at: :desc).page(params[:page]).per(10)
+    @events = @events.visible.order(created_at: :desc).page(params[:page]).per(10)
   end
 
   def new
@@ -76,9 +78,7 @@ class EventsController < ApplicationController
 
   def update_status
     if @event.update(status: params[:status])
-      if params[:status] == 'upcoming'
-        NotificationService.notify_event_approved(@event)
-      elsif params[:status] == 'canceled'
+      if params[:status] == 'canceled'
         NotificationService.notify_event_canceled(@event)
       end
       render json: {
@@ -95,36 +95,38 @@ class EventsController < ApplicationController
   end
 
   private
-    def set_event
-      @event = Event.find(params[:id])
-    end
+  def set_event
+    @event = Event.find(params[:id])
+  end
 
-    def authorize
-      unless Current.user.admin? || @event.organizing_teacher == Current.user
-        respond_to do |format|
-          format.json {
-            render json: {
-              success: false,
-              message: t('messages.error.unauthorized')
-            }, status: :unauthorized
-          }
-          format.html {
-            redirect_to root_path, notice: t('messages.error.unauthorized')
-          }
-        end
-      end
+  def authorize
+    unless Current.user.admin? || @event.organizing_teacher == Current.user
+      render json: {
+        success: false,
+        message: t('messages.error.unauthorized')
+      }, status: :unauthorized
     end
+  end
 
-    def event_params
-      params.require(:event).permit(:title, :description, :start_time, :end_time, :location, :status, :registration_deadline, :max_participants)
+  def require_admin
+    unless Current.user.admin?
+      render json: {
+        success: false,
+        message: t('messages.error.unauthorized')
+      }, status: :unauthorized
     end
+  end
 
-    def ensure_can_delete
-      unless @event.can_delete?
-        render json: {
-          success: false,
-          message: t('messages.error.event.delete'),
-        }, status: :unprocessable_entity
-      end
+  def event_params
+    params.require(:event).permit(:title, :description, :start_time, :end_time, :location, :status, :registration_deadline, :max_participants)
+  end
+
+  def ensure_can_delete
+    unless @event.can_delete?
+      render json: {
+        success: false,
+        message: t('messages.error.event.delete'),
+      }, status: :unprocessable_entity
     end
+  end
 end

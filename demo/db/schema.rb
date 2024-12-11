@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_10_100211) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_11_033052) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -37,6 +37,21 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_10_100211) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "applications", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.string "title", limit: 100, null: false
+    t.text "plan", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "applicant_id", null: false
+    t.datetime "approved_at"
+    t.text "comment"
+    t.bigint "event_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["applicant_id"], name: "index_applications_on_applicant_id"
+    t.index ["event_id"], name: "index_applications_on_event_id"
+    t.index ["status"], name: "index_applications_on_status"
   end
 
   create_table "events", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -160,6 +175,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_10_100211) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "applications", "events"
+  add_foreign_key "applications", "users", column: "applicant_id"
   add_foreign_key "events", "users", column: "organizing_teacher_id"
   add_foreign_key "feedbacks", "events"
   add_foreign_key "feedbacks", "users"

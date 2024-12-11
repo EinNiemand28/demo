@@ -28,6 +28,14 @@ Rails.application.routes.draw do
     resources :feedbacks, except: [:show]
   end
 
+  resources :applications do
+    member do
+      patch :approve
+      patch :reject
+      patch :reapply
+    end
+  end
+
   resources :users, only: [:index, :show, :edit, :update, :destroy] do
     member do
       # delete "reset_avatar", to: "users#reset_avatar", as: :reset_avatar

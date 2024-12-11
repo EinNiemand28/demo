@@ -1,0 +1,96 @@
+<%= form_with(model: application, 
+      class: "needs-validation",
+      data: { action: "submit-application" }) do |f| %>
+  <div class="mb-4">
+    <div class="form-floating">
+      <%= f.text_field :title, 
+            class: "form-control",
+            required: true,
+            placeholder: "活动名称" %>
+      <%= f.label :title, class: "text-muted" do %>
+        <i class="bi bi-bookmark me-1"></i>活动名称
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <div class="form-floating">
+      <%= f.text_area :plan, 
+            class: "form-control",
+            style: "height: 200px",
+            required: true,
+            placeholder: "活动计划" %>
+      <%= f.label :plan, class: "text-muted" do %>
+        <i class="bi bi-calendar-check me-1"></i>活动计划
+      <% end %>
+    </div>
+    <div class="form-text">
+      请详细说明活动的目的、内容、时间安排等信息。
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <%= link_to applications_path, class: "btn btn-outline-secondary" do %>
+      <i class="bi bi-arrow-left me-1"></i>返回
+    <% end %>
+    
+    <%= f.button class: "btn btn-primary" do %>
+      <i class="bi bi-send me-1"></i><%= application.new_record? ? '提交申请' : '保存修改' %>
+    <% end %>
+  </div>
+<% end %>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('[data-action="submit-application"]')
+  
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated')
+        return
+      }
+
+      const formData = new FormData(form)
+      
+      fetch(form.action, {
+        method: form.method,
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast({
+            message: data.message,
+            type: 'success',
+            delay: 1500,
+            redirect: data.redirect_url
+          })
+        } else {
+          showToast({
+            message: data.message,
+            type: 'danger',
+            errors: data.errors,
+            delay: 3000
+          })
+        }
+      })
+      .catch(error => {
+        showToast({
+          message: '系统错误，请稍后重试',
+          type: 'danger',
+          delay: 3000
+        })
+      })
+    })
+  }
+})
+</script>
+<% end %>

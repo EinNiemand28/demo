@@ -1,0 +1,282 @@
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-file-text me-2"></i><%= @application.title %>
+        </h4>
+        <span class="badge <%= application_status_badge_class(@application.status) %>">
+          <%= application_status(@application.status) %>
+        </span>
+      </div>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div class="card bg-light">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">
+                <i class="bi bi-person me-2"></i>申请人
+              </h6>
+              <p class="card-text">
+                <%= link_to @application.applicant.username, 
+                      user_path(@application.applicant),
+                      class: "text-decoration-none" %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card bg-light">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">
+                <i class="bi bi-clock me-2"></i>申请时间
+              </h6>
+              <p class="card-text">
+                <%= l @application.created_at, format: :long %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-light mb-4">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">
+            <i class="bi bi-calendar-check me-2"></i>活动计划
+          </h6>
+          <p class="card-text" style="text-indent: 0; color: #2c3e50; white-space: pre-line;">
+            <%= simple_format @application.plan %>
+          </p>
+        </div>
+      </div>
+
+      <% if @application.approved? || @application.rejected? %>
+        <div class="card bg-light mb-4">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-2 text-muted">
+              <i class="bi bi-chat-quote me-2"></i>审核意见
+            </h6>
+            <p class="card-text"  style="text-indent: 0; color: #2c3e50; white-space: pre-line;">
+              <%= @application.comment %>
+            </p>
+            <small class="text-muted">
+              <%= l @application.approved_at, format: :long if @application.approved_at %>
+            </small>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="d-flex justify-content-between align-items-center">
+        <%= link_to applications_path, class: "btn btn-outline-secondary" do %>
+          <i class="bi bi-arrow-left me-1"></i>返回列表
+        <% end %>
+
+        <div class="btn-group">
+         <% if Current.user.admin? && @application.pending? %>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+              <i class="bi bi-check-lg me-1"></i>通过
+            </button>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+              <i class="bi bi-x-lg me-1"></i>拒绝
+            </button>
+          <% end %>
+
+          <% if @application.applicant == Current.user %>
+            <%= link_to edit_application_path(@application), class: "btn btn-outline-primary" do %>
+              <i class="bi bi-pencil me-1"></i>修改申请
+            <% end %>
+            <% if @application.rejected? %>
+              <%= button_to reapply_application_path(@application),
+                    method: :patch,
+                    title: "重新申请",
+                    class: "btn btn-outline-success",
+                    form: { data: { 
+                        action: "reapply-application",
+                        confirm: "确认重新提交申请吗?" } } do %>
+                <i class="bi bi-arrow-repeat me-1"></i>重新申请
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+      <div class="modal fade" id="approveModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="bi bi-check-circle me-2"></i>审核通过
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <%= form_with url: approve_application_path(@application), 
+                  method: :patch,
+                  data: { action: "submit-approval" } do |f| %>
+              <div class="modal-body">
+                <div class="form-floating">
+                  <%= f.text_area :comment,
+                        class: "form-control",
+                        style: "height: 120px",
+                        required: true,
+                        placeholder: "审核意见" %>
+                  <%= f.label :comment do %>
+                    <i class="bi bi-chat-text me-1"></i>审核意见
+                  <% end %>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <%= f.submit "确认通过", class: "btn btn-success" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="bi bi-x-circle me-2"></i>审核拒绝
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <%= form_with url: reject_application_path(@application), 
+                  method: :patch,
+                  data: { action: "submit-rejection" } do |f| %>
+              <div class="modal-body">
+                <div class="form-floating">
+                  <%= f.text_area :comment,
+                        class: "form-control",
+                        style: "height: 120px",
+                        required: true,
+                        placeholder: "拒绝原因" %>
+                  <%= f.label :comment do %>
+                    <i class="bi bi-chat-text me-1"></i>拒绝原因
+                  <% end %>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <%= f.submit "确认拒绝", class: "btn btn-danger" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for :page_scripts do %>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('[data-action="submit-approval"]')?.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const form = e.target
+    const modal = bootstrap.Modal.getInstance(document.getElementById('approveModal'))
+    
+    fetch(form.action, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: new FormData(form)
+    })
+    .then(response => response.json())
+    .then(data => {
+      modal.hide()
+      if (data.success) {
+        showToast({
+          message: data.message,
+          type: 'success',
+          delay: 1000
+        })
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        showToast({
+          message: data.message,
+          type: 'danger',
+          delay: 3000
+        })
+      }
+    })
+  })
+
+  document.querySelector('[data-action="submit-rejection"]')?.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const form = e.target
+    const modal = bootstrap.Modal.getInstance(document.getElementById('rejectModal'))
+    
+    fetch(form.action, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: new FormData(form)
+    })
+    .then(response => response.json())
+    .then(data => {
+      modal.hide()
+      if (data.success) {
+        showToast({
+          message: data.message,
+          type: 'success',
+          delay: 1000
+        })
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        showToast({
+          message: data.message,
+          type: 'danger',
+          delay: 3000
+        })
+      }
+    })
+  })
+
+  document.querySelectorAll('[data-action="reapply-application"]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault()
+      const form = e.target.closest('form')
+      
+      if (confirm(form.dataset.confirm)) {
+        fetch(form.action, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showToast({
+              message: data.message,
+              type: 'success',
+              delay: 1500
+            })
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          } else {
+            showToast({
+              message: data.message,
+              type: 'danger',
+              delay: 3000
+            })
+          }
+        })
+      }
+    })
+  })
+})
+</script>
+<% end %>
