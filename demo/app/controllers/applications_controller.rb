@@ -65,33 +65,41 @@ class ApplicationsController < ApplicationController
   end
 
   def approve
-    if @application.update(
-      status: :approved,
-      approved_at: Time.current,
-      comment: params[:comment]
-    )
-      event = Event.create!(
-        title: @application.title,
-        organizing_teacher: @application.applicant,
-        status: :draft,
-        description: @application.plan,
-        start_time: Time.current,
-        end_time: Time.current + 1.day,
-        location: "TBD",
-        registration_deadline: Time.current - 1.day,
-        max_participants: 1
+    ActiveRecord::Base.transaction do
+      if @application.update(
+        status: :approved,
+        approved_at: Time.current,
+        comment: params[:comment]
       )
-      @application.event = event
-      NotificationService.notify_application_approved(@application)
-      render json: {
-        success: true,
-        message: t('messages.success.application.approve'),
-      }
-    else
+          event = Event.create!(
+            title: @application.title,
+            organizing_teacher: @application.applicant,
+            status: :draft,
+            description: @application.plan,
+            start_time: Time.current,
+            end_time: Time.current + 1.day,
+            location: "TBD",
+            registration_deadline: Time.current - 1.day,
+            max_participants: 1
+          )
+          @application.event = event
+          NotificationService.notify_application_approved(@application)
+          render json: {
+            success: true,
+            message: t('messages.success.application.approve'),
+          }
+      else
+        render json: {
+          success: false,
+          message: t('messages.error.application.approve'),
+          errors: @application.errors.full_messages
+        }, status: :unprocessable_entity
+      end
+    rescue ActiveRecord::RecordInvalid => e
       render json: {
         success: false,
         message: t('messages.error.application.approve'),
-        errors: @application.errors.full_messages
+        errors: e.record.errors.full_messages
       }, status: :unprocessable_entity
     end
   end

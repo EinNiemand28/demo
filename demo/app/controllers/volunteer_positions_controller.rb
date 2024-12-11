@@ -38,6 +38,7 @@ class VolunteerPositionsController < ApplicationController
 
   def update
     if @volunteer_position.update(volunteer_position_params)
+      NotificationService.new.volunteer_position_updated(@volunteer_position)
       render json: {
         success: true,
         message: t('messages.success.volunteer_position.update'),

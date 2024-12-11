@@ -85,6 +85,7 @@ class StudentVolunteerPositionsController < ApplicationController
   def cancel
     @student_volunteer_position = Current.user.student_volunteer_positions.find_by(volunteer_position: @volunteer_position)
     if @student_volunteer_position.update(status: :canceled)
+      NotificationService.notify_volunteer_canceled(@student_volunteer_position)
       render json: {
         success: true,
         message: t('messages.success.student_volunteer_position.cancel')
