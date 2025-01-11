@@ -70,3 +70,6 @@ gem "authentication-zero", "~> 4.0"
 gem "request_store", "~> 1.7"
 
 gem "sassc-rails", "~> 2.1"
+
+gem "rack-cors"
+gem "jwt"
